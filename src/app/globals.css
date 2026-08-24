@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  --haola-canvas: #12110f;
+  --haola-surface: #1e1c18;
+  --haola-elevated: #26231e;
+  --haola-ink: #f4f0ea;
+  --haola-muted: #9a948a;
+  --haola-accent: #ff5c1a;
+  --haola-accent-hover: #e85216;
+  --haola-line: rgb(244 240 234 / 0.1);
+  --haola-sage: #8fa382;
+  --haola-warn: #d4a24a;
+  --haola-rose: #d46a6a;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-press: 120ms;
+  --duration-ui: 200ms;
+  --duration-sheet: 320ms;
+}
+
+@theme inline {
+  --color-canvas: var(--haola-canvas);
+  --color-surface: var(--haola-surface);
+  --color-elevated: var(--haola-elevated);
+  --color-ink: var(--haola-ink);
+  --color-muted: var(--haola-muted);
+  --color-accent: var(--haola-accent);
+  --color-accent-hover: var(--haola-accent-hover);
+  --color-line: var(--haola-line);
+  --color-sage: var(--haola-sage);
+  --color-warn: var(--haola-warn);
+  --color-rose: var(--haola-rose);
+  --font-sans: var(--font-sora);
+  --font-mono: var(--font-jb);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  min-height: 100dvh;
+  background: var(--haola-canvas);
+  color: var(--haola-ink);
+}
+
+body {
+  font-family: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--haola-accent) 35%, transparent);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+input,
+textarea {
+  color: var(--haola-ink);
+}
+
+/* Keep layout stable when mobile keyboards open */
+.workspace-root {
+  min-height: 100dvh;
+  min-height: 100svh;
+}
+
+.pb-nav {
+  padding-bottom: calc(72px + var(--safe-bottom));
+}
+
+.pt-safe {
+  padding-top: max(12px, var(--safe-top));
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform var(--duration-press) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  button:active:not(:disabled) {
+    transform: none;
+  }
+}

@@ -1,0 +1,13 @@
+---
+description: Haola visual system — dark canvas, ember accent, Sora, video-first. Apply on all UI work.
+globs: **/*.{tsx,css,md}
+alwaysApply: true
+---
+
+# Haola UI
+
+Before any visual change, read `.cursor/skills/haola-uiux/SKILL.md`.
+
+Tokens win: canvas `#12110F`, surface `#1E1C18`, accent `#FF5C1A`, type Sora. Use CSS variables / Tailwind tokens — no hex in JSX.
+
+Landing = type + one 9:16 reel + one ember CTA. Creator desktop = blank canvas studio. Business login = next actions, not charts. One accent. No Inter, no purple AI, no feature-card grids in the hero, no sidebar on work routes.
