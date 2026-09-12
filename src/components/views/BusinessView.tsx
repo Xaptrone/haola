@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ActionFeed } from "@/components/feed/ActionFeed";
 import { ReviewPipeline } from "@/components/review/ReviewPipeline";
@@ -20,12 +20,13 @@ import { NeedWorkspace } from "@/components/auth/NeedWorkspace";
 import { BusinessCreate } from "./BusinessCreate";
 
 export function BusinessView() {
-  const { session, patchBusiness } = useSession();
+  const { session, patchBusiness, loadPreset, ready } = useSession();
   const market = useMarketplace();
   const router = useRouter();
   const tab = useSearchParams().get("tab") ?? "home";
   const flowQ = useSearchParams().get("flow");
   const jobQ = useSearchParams().get("job");
+  const preview = useSearchParams().get("preview") === "1";
   const ws = session.businessWorkspace;
   const [step, setStep] = useState<"idle" | "business" | "goal">(
     flowQ === "setup" ? "business" : "idle",
@@ -49,7 +50,15 @@ export function BusinessView() {
       )
     : [];
 
+  useEffect(() => {
+    if (!ready || !preview) return;
+    if (session.role !== "business") loadPreset("business-ready");
+  }, [ready, preview, session.role, loadPreset]);
+
+  if (!ready) return <div className="min-h-dvh bg-canvas" />;
+
   if (!ws || session.role !== "business") {
+    if (preview) return <div className="min-h-dvh bg-canvas" />;
     return <NeedWorkspace kind="business" />;
   }
 

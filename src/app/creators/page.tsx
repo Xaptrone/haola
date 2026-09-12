@@ -20,6 +20,12 @@ export default function CreatorsPage() {
       >
         Open a studio
       </Link>
+      <Link
+        href="/work/studio?as=aisha&preview=1"
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center text-sm text-muted"
+      >
+        Preview
+      </Link>
     </div>
   );
 }

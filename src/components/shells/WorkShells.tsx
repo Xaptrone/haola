@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { BottomNav, type NavItem } from "@/components/nav/BottomNav";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { PreviewMenu } from "@/components/demo/RoleSwitcher";
 
 export function MobileAppShell({
   title,
@@ -29,7 +30,10 @@ export function MobileAppShell({
         <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
           {title}
         </p>
-        <SignOutButton />
+        <div className="flex items-center gap-4">
+          <PreviewMenu />
+          <SignOutButton />
+        </div>
       </header>
       <main className={`flex-1 overflow-auto px-5 pt-6 ${contained ? "pb-24" : "pb-nav"}`}>
         {children}
@@ -58,6 +62,7 @@ export function StudioShell({
         </p>
         <div className="flex items-center gap-6">
           {actions}
+          <PreviewMenu />
           <Link href="/oversight/creator" className="text-sm text-muted hover:text-ink">
             Performance
           </Link>
@@ -88,6 +93,7 @@ export function CommandShell({
           {name}
         </p>
         <div className="flex items-center gap-6">
+          <PreviewMenu />
           <Link href="/oversight/business" className="text-sm text-muted hover:text-ink">
             Performance
           </Link>

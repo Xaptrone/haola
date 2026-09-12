@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { VerticalVideo } from "@/components/ui/VerticalVideo";
 import { GuestCampaign } from "./GuestCampaign";
+import { PreviewMenu } from "@/components/demo/RoleSwitcher";
 
 export function LandingPage() {
   const [open, setOpen] = useState(false);
@@ -22,6 +23,9 @@ export function LandingPage() {
           <Link href="/creators" className="text-muted hover:text-ink">
             I&apos;m a creator
           </Link>
+          <div className="hidden lg:block">
+            <PreviewMenu always />
+          </div>
           {signedIn ? (
             <Link href="/start" className="text-ink">
               Workspace
@@ -34,7 +38,7 @@ export function LandingPage() {
         </div>
       </header>
 
-      <section className="mx-auto grid min-h-[calc(100dvh-64px)] max-w-6xl items-center gap-12 px-5 pb-28 pt-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-10 lg:pb-16">
+      <section className="mx-auto grid min-h-[calc(100dvh-64px)] max-w-6xl items-center gap-12 px-5 pb-36 pt-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-10 lg:pb-16">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
             For businesses
@@ -104,6 +108,7 @@ export function LandingPage() {
         <Button className="min-h-14 w-full" onClick={() => setOpen(true)}>
           Start a campaign
         </Button>
+        <PreviewMenu always placement="up" tone="quiet" />
       </div>
 
       {open ? <GuestCampaign onClose={() => setOpen(false)} /> : null}
