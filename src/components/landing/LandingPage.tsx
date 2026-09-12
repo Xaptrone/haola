@@ -79,7 +79,7 @@ export function LandingPage() {
         </ol>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 pb-28 lg:grid lg:grid-cols-2 lg:items-start lg:gap-16 lg:px-10 lg:pb-32">
+      <section className="mx-auto max-w-6xl px-5 pb-40 lg:grid lg:grid-cols-2 lg:items-start lg:gap-16 lg:px-10 lg:pb-32">
         <div>
           <h2 className="text-2xl font-medium tracking-tight">Trust is operational.</h2>
           <p className="mt-3 max-w-sm text-sm leading-6 text-muted">
