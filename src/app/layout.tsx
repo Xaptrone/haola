@@ -16,7 +16,7 @@ const jb = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Haola — Virtual KOLs for restaurants",
+  title: "fxgen — Virtual KOLs for restaurants",
   description:
     "Match AI-native virtual KOLs to your restaurant. Approve every video before it goes live.",
 };

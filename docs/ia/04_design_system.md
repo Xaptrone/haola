@@ -10,7 +10,7 @@ AI-native, young, intelligent, creative, minimal, premium, fast, trustworthy.
 
 - 60% canvas: `#12110F`
 - 30% surface: `#1E1C18`
-- 10% accent: `#FF5C1A` ember — one CTA, active nav, score emphasis
+- 10% accent: `#6F43F6` purple — one CTA, active nav, score emphasis (fxgen mark)
 - Ink `#F4F0EA` / muted `#9A948A`
 - Line `rgba(244, 240, 234, 0.10)`
 - Sage success, amber warning, rose only for reject / QC fail

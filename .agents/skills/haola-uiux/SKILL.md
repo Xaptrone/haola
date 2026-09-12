@@ -1,11 +1,11 @@
 ---
 name: haola-uiux
 description: >-
-  Project Haola UI/UX router. Dark canvas, ember accent, Sora, video-first.
-  Use for any Haola marketing or product UI. Full skill:
+  Project fxgen UI/UX router. Dark canvas, purple accent (#6F43F6), Sora, video-first.
+  Use for any fxgen marketing or product UI. Full skill:
   .cursor/skills/haola-uiux/SKILL.md
 ---
 
-# Haola UI/UX
+# fxgen UI/UX
 
-Follow [../../.cursor/skills/haola-uiux/SKILL.md](../../.cursor/skills/haola-uiux/SKILL.md).
+Follow `.cursor/skills/haola-uiux/SKILL.md`. Accent is `#6F43F6`. Logo is `BrandLogo`.

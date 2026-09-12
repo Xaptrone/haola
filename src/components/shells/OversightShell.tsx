@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export function OversightShell({
   title,
@@ -10,9 +11,9 @@ export function OversightShell({
   return (
     <div className="min-h-dvh bg-canvas lg:grid lg:grid-cols-[220px_1fr]">
       <aside className="hidden border-r border-line p-6 lg:block">
-        <p className="mb-8 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-          Haola
-        </p>
+        <div className="mb-8">
+          <BrandLogo href="/oversight/manager" height={22} />
+        </div>
         <nav className="space-y-1 text-sm">
           <Link className="block rounded-[10px] bg-elevated px-3 py-2 text-ink" href="/oversight/manager">
             Queue

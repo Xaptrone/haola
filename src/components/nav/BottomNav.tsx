@@ -35,7 +35,7 @@ export function BottomNav({
                 href={item.href}
                 className={`relative flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-[10px] tracking-wide ${
                   item.primary
-                    ? "-mt-5 h-14 w-14 rounded-full bg-accent text-canvas"
+                    ? "-mt-5 h-14 w-14 rounded-full bg-accent text-ink"
                     : on
                       ? "text-ink"
                       : "text-muted"
@@ -50,7 +50,7 @@ export function BottomNav({
                 )}
                 <span>{item.label}</span>
                 {item.badge ? (
-                  <span className="absolute right-2 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[9px] text-canvas">
+                  <span className="absolute right-2 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[9px] text-ink">
                     {item.badge}
                   </span>
                 ) : null}

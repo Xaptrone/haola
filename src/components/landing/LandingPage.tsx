@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/Button";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { VerticalVideo } from "@/components/ui/VerticalVideo";
@@ -13,7 +14,7 @@ export function LandingPage() {
   return (
     <div className="bg-canvas text-ink">
       <header className="pt-safe sticky top-0 z-40 flex items-center justify-between bg-canvas/90 px-5 py-4 backdrop-blur-md lg:px-10">
-        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink">Haola</p>
+        <BrandLogo height={26} />
         <div className="flex items-center gap-5 text-sm">
           <Link href="/creators" className="text-muted hover:text-ink">
             I&apos;m a creator
@@ -33,7 +34,7 @@ export function LandingPage() {
             Virtual KOLs, made for your restaurant.
           </h1>
           <p className="mt-5 max-w-md text-[16px] leading-7 text-muted">
-            Tell Haola the outlet. Get matched virtual KOLs. Approve every video
+            Tell fxgen the outlet. Get matched virtual KOLs. Approve every video
             before it goes live.
           </p>
           <div className="mt-8 hidden lg:block">
@@ -52,7 +53,7 @@ export function LandingPage() {
       <section className="mx-auto max-w-6xl px-5 py-20 lg:px-10">
         <ol className="grid gap-10 lg:grid-cols-3">
           {[
-            ["01", "Tell Haola the restaurant", "Outlet, menu, what you want people to do."],
+            ["01", "Tell fxgen the restaurant", "Outlet, menu, what you want people to do."],
             ["02", "Match virtual KOLs", "Predicted fit. You pick. Factors are inspectable."],
             ["03", "Approve the cut", "Manager QC first. You still sign off."],
           ].map(([n, t, d]) => (

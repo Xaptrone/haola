@@ -44,6 +44,29 @@ export type FeedItem = {
   tone?: "action" | "info" | "money";
 };
 
+/** Business content approval pipeline — 3 gates, 1 edit revision. */
+export type PipelineStep = "script" | "rough" | "edited";
+
+export type ReviewWaitingOn = "business" | "creator" | "admin" | "done";
+
+export type ReviewJob = {
+  id: string;
+  title: string;
+  restaurant: string;
+  creatorName: string;
+  kolName: string;
+  step: PipelineStep;
+  waitingOn: ReviewWaitingOn;
+  revisionsUsed: number;
+  maxRevisions: 1;
+  script: string;
+  ingredients: { name: string; note: string }[];
+  photoLabels: string[];
+  roughCaption: string;
+  editedCaption: string;
+  adminLog: { id: string; text: string; at: string }[];
+};
+
 export type CreatorWorkspace = {
   kind: "creator";
   id: string;

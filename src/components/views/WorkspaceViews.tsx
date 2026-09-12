@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BlankCanvas } from "@/components/ai/BlankCanvas";
 import { ActionFeed } from "@/components/feed/ActionFeed";
 import { PhoneFrame } from "@/components/shells/PhoneFrame";
@@ -68,7 +68,7 @@ export function StudioView() {
         <p className="text-muted">Creators land in a studio, not the restaurant site.</p>
         <button
           type="button"
-          className="min-h-12 rounded-full bg-accent px-5 text-sm font-medium text-canvas"
+          className="min-h-12 rounded-full bg-accent px-5 text-sm font-medium text-ink"
           onClick={() => loadPreset("creator-new")}
         >
           Open a new creator studio
@@ -293,12 +293,25 @@ export function StudioView() {
 
 export function BusinessView() {
   const { session, patchBusiness } = useSession();
+  const router = useRouter();
   const tab = useSearchParams().get("tab") ?? "home";
   const flowQ = useSearchParams().get("flow");
   const ws = session.businessWorkspace;
   const [step, setStep] = useState<"idle" | "restaurant" | "goal" | "draft">(
     flowQ === "setup" ? "restaurant" : "idle",
   );
+  const [createStep, setCreateStep] = useState<"restaurant" | "goal" | "brief">(
+    "restaurant",
+  );
+  const [campaignRestaurant, setCampaignRestaurant] = useState("");
+  const [campaignGoal, setCampaignGoal] = useState("");
+
+  useEffect(() => {
+    if (tab !== "create") return;
+    setCreateStep("restaurant");
+    setCampaignRestaurant("");
+    setCampaignGoal("");
+  }, [tab]);
 
   if (!ws || session.role !== "business") {
     return (
@@ -310,6 +323,27 @@ export function BusinessView() {
 
   const needsSetup = ws.onboardingStage !== "ready" && !ws.guestDraft;
   const showDraft = Boolean(ws.guestDraft) && step !== "restaurant";
+
+  function finishCampaignDraft() {
+    const campaignId = uid("cmp");
+    patchBusiness({
+      guestDraft: null,
+      feed: [
+        {
+          id: campaignId,
+          title: `${campaignRestaurant} · ${campaignGoal}`,
+          detail: "Brief ready. Match KOLs next.",
+          href: "/work/business?tab=campaigns",
+          tone: "action",
+        },
+        ...ws.feed.filter((item) => item.id !== "first"),
+      ],
+    });
+    setCreateStep("restaurant");
+    setCampaignRestaurant("");
+    setCampaignGoal("");
+    router.push("/work/business?tab=home");
+  }
 
   const body = (
     <>
@@ -373,6 +407,18 @@ export function BusinessView() {
                 { id: "edit", label: "Edit", variant: "ghost" },
               ],
             }}
+            onAction={(actionId) => {
+              if (actionId === "continue") {
+                setCampaignRestaurant(ws.guestDraft!.restaurantName);
+                setCampaignGoal(ws.guestDraft!.goal);
+                setCreateStep("brief");
+                setStep("idle");
+                router.push("/work/business?tab=create");
+              }
+              if (actionId === "edit") {
+                setStep("restaurant");
+              }
+            }}
           />
         </div>
       ) : null}
@@ -381,19 +427,88 @@ export function BusinessView() {
           <h1 className="text-2xl font-medium tracking-tight">
             {tab === "create" ? "New campaign" : "Home"}
           </h1>
-          {tab === "create" ? (
+          {tab === "create" && createStep === "restaurant" ? (
             <ClarifyChips
               question="Which restaurant are we promoting?"
               options={
                 ws.restaurants.length
                   ? ws.restaurants.map((r) => r.name)
-                  : ["As I Am by Chef Ton"]
+                  : ["As I Am by Chef Ton", "SOOD Penang"]
               }
-              onPick={() => undefined}
+              onPick={(v) => {
+                setCampaignRestaurant(v);
+                setCreateStep("goal");
+              }}
             />
-          ) : (
-            <ActionFeed items={ws.feed} />
-          )}
+          ) : null}
+          {tab === "create" && createStep === "goal" ? (
+            <ClarifyChips
+              question="Should this content drive bookings, or something else?"
+              options={["Bookings", "A new menu", "A promotion", "Awareness"]}
+              onPick={(v) => {
+                setCampaignGoal(v);
+                setCreateStep("brief");
+              }}
+            />
+          ) : null}
+          {tab === "create" && createStep === "brief" ? (
+            <div className="space-y-4">
+              <p className="text-[17px] font-medium text-ink">
+                A first brief. Confirm before we match KOLs.
+              </p>
+              <ActionCard
+                card={{
+                  id: "brief",
+                  kind: "brief",
+                  title: "Campaign brief",
+                  provenance: "ai",
+                  rows: [
+                    {
+                      label: "Restaurant",
+                      value: campaignRestaurant,
+                      provenance: "user",
+                    },
+                    { label: "Goal", value: campaignGoal, provenance: "user" },
+                    {
+                      label: "Angle",
+                      value: "First-visit tasting, not a shouty promo",
+                      provenance: "ai",
+                    },
+                  ],
+                  actions: [
+                    { id: "accept", label: "Accept" },
+                    { id: "edit", label: "Edit", variant: "ghost" },
+                  ],
+                }}
+                onAction={(actionId) => {
+                  if (actionId === "accept") finishCampaignDraft();
+                  if (actionId === "edit") setCreateStep("restaurant");
+                }}
+              />
+              <ActionCard
+                card={{
+                  id: "kol",
+                  kind: "kol",
+                  title: "Recommended KOL · Mei Lin",
+                  provenance: "predicted",
+                  score: { value: 91, label: "Match to this brief" },
+                  factors: [
+                    { label: "Market", value: "KL / Penang food" },
+                    { label: "Tone", value: "Fine dining, not hawker shout" },
+                    { label: "Language", value: "EN + 中文" },
+                  ],
+                  actions: [
+                    { id: "accept", label: "Accept match" },
+                    { id: "compare", label: "Compare", variant: "ghost" },
+                  ],
+                }}
+                onAction={(actionId) => {
+                  if (actionId === "accept") finishCampaignDraft();
+                }}
+              />
+            </div>
+          ) : null}
+          {tab !== "create" ? <ActionFeed items={ws.feed} /> : null}
         </div>
       ) : null}
     </>

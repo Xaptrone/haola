@@ -16,7 +16,7 @@ export default function CreatorsPage() {
       </p>
       <Link
         href="/register/creator"
-        className="mt-8 inline-flex min-h-14 w-full items-center justify-center rounded-full bg-accent text-base font-medium text-canvas"
+        className="mt-8 inline-flex min-h-14 w-full items-center justify-center rounded-full bg-accent text-base font-medium text-ink"
       >
         Open a studio
       </Link>
