@@ -44,7 +44,7 @@ export function StartView() {
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6">
       <BrandLogo height={26} />
       <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-        {email}
+        {identity.id.startsWith("wa:") ? name : email}
       </p>
       <h1 className="mt-3 text-[32px] font-semibold tracking-[-0.03em]">
         How will you use fxgen?
@@ -52,7 +52,7 @@ export function StartView() {
       <p className="mt-3 text-sm leading-6 text-muted">
         {guestDraft
           ? `Your ${guestDraft.businessName} draft comes with you.`
-          : "One Google account. One workspace to start."}
+          : "One login. One workspace to start."}
       </p>
       <div className="mt-8 space-y-2">
         <button
@@ -63,7 +63,10 @@ export function StartView() {
               : "border border-line bg-elevated text-ink"
           }`}
           onClick={() => {
-            registerBusiness(name, email);
+            registerBusiness(
+              identity.id.startsWith("wa:") ? "My business" : name,
+              email,
+            );
             router.push("/work/business");
           }}
         >
@@ -77,7 +80,10 @@ export function StartView() {
               : "bg-accent text-ink"
           }`}
           onClick={() => {
-            registerCreator(name, email);
+            registerCreator(
+              identity.id.startsWith("wa:") ? "My studio" : name,
+              email,
+            );
             router.push("/work/studio");
           }}
         >

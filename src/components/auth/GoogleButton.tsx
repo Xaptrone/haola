@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/Button";
 export function GoogleButton({
   callbackUrl,
   label = "Continue with Google",
+  variant = "primary",
 }: {
   callbackUrl: string;
   label?: string;
+  variant?: "primary" | "ghost" | "quiet";
 }) {
   return (
     <Button
       type="button"
+      variant={variant}
       className="min-h-14 w-full gap-3"
       onClick={() => signIn("google", { callbackUrl })}
     >

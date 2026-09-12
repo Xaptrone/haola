@@ -115,7 +115,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
               Continue with this draft
             </Button>
             <p className="text-center text-xs text-muted">
-              Log in with Google to keep this draft in your workspace.
+              Log in to keep this draft in your workspace.
             </p>
           </div>
         ) : null}

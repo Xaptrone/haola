@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { GoogleButton } from "@/components/auth/GoogleButton";
+import { WhatsAppLogin } from "@/components/auth/WhatsAppLogin";
 import { auth, googleAuthConfigured } from "@/auth";
+import { whatsappAuthConfigured } from "@/lib/whatsapp-otp";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -17,17 +18,18 @@ export default async function LoginPage({
     redirect(next || (intent ? `/start?intent=${intent}` : "/start"));
   }
 
-  const configured = googleAuthConfigured();
   const callbackUrl = `/start${intent ? `?intent=${intent}` : ""}${
     next ? `${intent ? "&" : "?"}next=${encodeURIComponent(next)}` : ""
   }`;
 
-  const errorCopy =
-    error === "Configuration"
-      ? "Google sign-in is not configured on this server yet."
-      : error
-        ? "Google sign-in didn't complete. Try again."
-        : null;
+  let errorCopy: string | null = null;
+  if (error === "Configuration") {
+    errorCopy = "Sign-in is not configured on this server yet.";
+  } else if (error === "CredentialsSignin") {
+    errorCopy = "That code didn't match. Try again.";
+  } else if (error) {
+    errorCopy = "Sign-in didn't complete. Try again.";
+  }
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6">
@@ -36,18 +38,18 @@ export default async function LoginPage({
         Log in
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted">
-        Continue with the Google account you use for work.
+        WhatsApp is the fastest way in. Google works too if you already use it
+        for work.
       </p>
       {errorCopy ? (
         <p className="mt-4 text-sm text-rose">{errorCopy}</p>
       ) : null}
       <div className="mt-8">
-        <GoogleButton callbackUrl={callbackUrl} />
-        {!configured ? (
-          <p className="mt-4 text-sm text-muted">
-            Google sign-in is not connected on this server yet.
-          </p>
-        ) : null}
+        <WhatsAppLogin
+          callbackUrl={callbackUrl}
+          googleConfigured={googleAuthConfigured()}
+          whatsappConfigured={whatsappAuthConfigured()}
+        />
       </div>
       <Link href="/" className="mt-8 text-center text-sm text-muted">
         Back
