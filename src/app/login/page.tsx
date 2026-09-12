@@ -45,13 +45,7 @@ export default async function LoginPage({
         <GoogleButton callbackUrl={callbackUrl} />
         {!configured ? (
           <p className="mt-4 text-sm text-muted">
-            Set <span className="font-mono text-ink">AUTH_GOOGLE_ID</span> and{" "}
-            <span className="font-mono text-ink">AUTH_GOOGLE_SECRET</span> on
-            the server, then add redirect{" "}
-            <span className="font-mono text-ink">
-              /api/auth/callback/google
-            </span>{" "}
-            in Google Cloud.
+            Google sign-in is not connected on this server yet.
           </p>
         ) : null}
       </div>
