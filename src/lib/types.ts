@@ -1,5 +1,7 @@
 export type Role = "anonymous" | "creator" | "business" | "manager";
 
+export type BusinessSeat = "owner" | "marketing";
+
 export type Provenance =
   | "user"
   | "verified"
@@ -7,7 +9,9 @@ export type Provenance =
   | "predicted"
   | "manager";
 
-export type OnboardingStage = "welcome" | "restaurant" | "goal" | "ready";
+export type OnboardingStage = "welcome" | "business" | "goal" | "ready";
+
+export type CreateIntent = "campaign" | "brand-ip" | "content-pack";
 
 export type Kol = {
   id: string;
@@ -21,7 +25,7 @@ export type Kol = {
   match?: number;
 };
 
-export type Restaurant = {
+export type Brand = {
   id: string;
   name: string;
   city: string;
@@ -30,7 +34,7 @@ export type Restaurant = {
 
 export type CampaignDraft = {
   id: string;
-  restaurantName: string;
+  businessName: string;
   goal: string;
   story?: string;
   budget?: string;
@@ -44,6 +48,8 @@ export type FeedItem = {
   tone?: "action" | "info" | "money";
 };
 
+export type JobKind = "campaign" | "brand-ip" | "content-pack";
+
 /** Business content approval pipeline — 3 gates, 1 edit revision. */
 export type PipelineStep = "script" | "rough" | "edited";
 
@@ -52,7 +58,9 @@ export type ReviewWaitingOn = "business" | "creator" | "admin" | "done";
 export type ReviewJob = {
   id: string;
   title: string;
-  restaurant: string;
+  kind: JobKind;
+  businessId: string;
+  businessName: string;
   creatorName: string;
   kolName: string;
   step: PipelineStep;
@@ -60,11 +68,71 @@ export type ReviewJob = {
   revisionsUsed: number;
   maxRevisions: 1;
   script: string;
-  ingredients: { name: string; note: string }[];
+  notes: { name: string; note: string }[];
   photoLabels: string[];
   roughCaption: string;
   editedCaption: string;
   adminLog: { id: string; text: string; at: string }[];
+  priceCredits: number;
+};
+
+export type BrandIpJob = {
+  id: string;
+  businessId: string;
+  businessName: string;
+  brief: string;
+  look: string;
+  tone: string;
+  dos: string;
+  donts: string;
+  sampleLines: string[];
+  status: "draft" | "confirmed" | "handed_off";
+  creatorName: string;
+  kolName: string;
+};
+
+export type SpendRequest = {
+  id: string;
+  businessId: string;
+  title: string;
+  amount: number;
+  kind: CreateIntent;
+  businessName: string;
+  goal: string;
+  assetCount?: number;
+};
+
+export type WalletId =
+  | `business:${string}`
+  | `creator:${string}`
+  | "platform_revenue"
+  | "escrow"
+  | "platform_clearing";
+
+export type LedgerReason =
+  | "admin_topup"
+  | "hold"
+  | "release_creator"
+  | "release_platform"
+  | "refund";
+
+export type LedgerEntry = {
+  id: string;
+  idempotencyKey: string;
+  debitWallet: WalletId;
+  creditWallet: WalletId;
+  amount: number;
+  reason: LedgerReason;
+  refType: "job" | "campaign" | "topup" | "payout";
+  refId: string;
+  actor: string;
+  at: string;
+};
+
+export type MarketplaceParty = {
+  id: string;
+  name: string;
+  kind: "business" | "creator";
 };
 
 export type CreatorWorkspace = {
@@ -80,7 +148,8 @@ export type BusinessWorkspace = {
   kind: "business";
   id: string;
   name: string;
-  restaurants: Restaurant[];
+  seat: BusinessSeat;
+  brands: Brand[];
   onboardingStage: OnboardingStage;
   guestDraft: CampaignDraft | null;
   feed: FeedItem[];

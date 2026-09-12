@@ -17,7 +17,7 @@ type AiContext = {
   workspaceKind: 'guest' | 'creator' | 'business' | 'manager'
   userId?: string
   role: 'anonymous' | 'creator' | 'business' | 'manager' | 'admin'
-  restaurantId?: string
+  brandId?: string
   creatorId?: string
   kolId?: string
   campaignId?: string
@@ -34,7 +34,7 @@ If a fact is required and missing (outlet, price scope, visit/taste, bookings vs
 
 ## Output
 
-Short sentence + **action card(s)**. Card types: avatar proposal, AMF score, campaign brief, recommended KOL, content-angle, QC report, revision checklist, approval, payment summary, restaurant setup.
+Short sentence + **action card(s)**. Card types: avatar proposal, AMF score, campaign brief, recommended KOL, content-angle, QC report, revision checklist, approval, payment summary, business setup, IP pack.
 
 Actions depend on role + stage: Accept, Edit, Regenerate, Compare, Submit, Approve, Request revision, Save draft.
 
@@ -50,4 +50,4 @@ Persist after every turn. Guest drafts promote into the business workspace on re
 
 ## Guest vs signed-in
 
-Guest may generate a sample brief + KOL recommendations. Publishing, paying, and assigning a restaurant that is not yet verified require a business workspace.
+Guest may generate a sample brief + KOL recommendations. Publishing, paying, and assigning a brand that is not yet verified require a business workspace.

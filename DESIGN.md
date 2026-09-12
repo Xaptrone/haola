@@ -1,6 +1,6 @@
 ---
 name: fxgen
-description: Virtual KOL marketplace — cinematic dark canvas, warm ink, purple spark
+description: Virtual KOL marketplace for Malaysian SMEs — cinematic dark canvas, warm ink, purple spark
 colors:
   canvas: "#12110F"
   surface: "#1E1C18"

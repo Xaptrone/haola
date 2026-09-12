@@ -1,14 +1,14 @@
 # Marketing
 
-Primary page `/` sells the marketplace to **restaurant / business owners**.
+Primary page `/` sells the marketplace to **business owners**.
 
 ## Job
 
-In under 10 seconds: virtual KOLs make restaurant content for my brand. One action: Start a campaign.
+In under 10 seconds: virtual KOLs make content for my business. One action: Start a campaign.
 
 ## Structure
 
-1. Hero — one promise, ember CTA, brand-safe / QC line
+1. Hero — one promise, purple CTA, brand-safe / QC line
 2. Wow — vertical virtual-KOL video
 3. How it works — tell AI → match KOLs → approve content
 4. Trust — QC, claim checks, you approve before publish

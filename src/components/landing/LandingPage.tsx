@@ -28,13 +28,13 @@ export function LandingPage() {
       <section className="mx-auto grid min-h-[calc(100dvh-64px)] max-w-6xl items-center gap-12 px-5 pb-28 pt-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-10 lg:pb-16">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-            For restaurants
+            For businesses
           </p>
           <h1 className="mt-5 max-w-[12ch] text-[40px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink lg:text-[56px]">
-            Virtual KOLs, made for your restaurant.
+            Virtual KOLs, made for your business.
           </h1>
           <p className="mt-5 max-w-md text-[16px] leading-7 text-muted">
-            Tell fxgen the outlet. Get matched virtual KOLs. Approve every video
+            Tell fxgen the brand. Get matched virtual KOLs. Approve every video
             before it goes live.
           </p>
           <div className="mt-8 hidden lg:block">
@@ -53,7 +53,7 @@ export function LandingPage() {
       <section className="mx-auto max-w-6xl px-5 py-20 lg:px-10">
         <ol className="grid gap-10 lg:grid-cols-3">
           {[
-            ["01", "Tell fxgen the restaurant", "Outlet, menu, what you want people to do."],
+            ["01", "Tell fxgen the business", "Brand, offer, what you want people to do."],
             ["02", "Match virtual KOLs", "Predicted fit. You pick. Factors are inspectable."],
             ["03", "Approve the cut", "Manager QC first. You still sign off."],
           ].map(([n, t, d]) => (

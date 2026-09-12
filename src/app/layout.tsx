@@ -16,9 +16,9 @@ const jb = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "fxgen — Virtual KOLs for restaurants",
+  title: "fxgen — Virtual KOLs for businesses",
   description:
-    "Match AI-native virtual KOLs to your restaurant. Approve every video before it goes live.",
+    "Match AI-native virtual KOLs to your business. Approve every video before it goes live.",
 };
 
 export const viewport: Viewport = {
@@ -28,7 +28,11 @@ export const viewport: Viewport = {
   themeColor: "#12110F",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"

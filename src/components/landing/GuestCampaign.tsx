@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ActionCard, type ActionCardModel } from "@/components/ui/ActionCard";
 import { Button } from "@/components/ui/Button";
 import { ClarifyChips } from "@/components/ui/ClarifyChips";
+import { SAMPLE_BRANDS } from "@/lib/review";
 import { useSession } from "@/lib/session";
 
 type Step = 0 | 1 | 2;
@@ -13,7 +14,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
   const { setGuestDraft } = useSession();
   const router = useRouter();
   const [step, setStep] = useState<Step>(0);
-  const [restaurant, setRestaurant] = useState("");
+  const [business, setBusiness] = useState("");
   const [goal, setGoal] = useState("");
 
   const cards: ActionCardModel[] = useMemo(
@@ -24,9 +25,9 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
         title: "Campaign brief",
         provenance: "ai",
         rows: [
-          { label: "Restaurant", value: restaurant, provenance: "user" },
+          { label: "Business", value: business, provenance: "user" },
           { label: "Goal", value: goal, provenance: "user" },
-          { label: "Angle", value: "First-visit tasting, not a shouty promo", provenance: "ai" },
+          { label: "Angle", value: "First-visit story, not a shouty promo", provenance: "ai" },
         ],
         actions: [
           { id: "accept", label: "Accept" },
@@ -41,8 +42,8 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
         provenance: "predicted",
         score: { value: 91, label: "Match to this brief" },
         factors: [
-          { label: "Market", value: "KL / Penang food" },
-          { label: "Tone", value: "Fine dining, not hawker shout" },
+          { label: "Market", value: "KL / Penang" },
+          { label: "Tone", value: "Premium, not shouty" },
           { label: "Language", value: "EN + 中文" },
         ],
         actions: [
@@ -51,13 +52,13 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
         ],
       },
     ],
-    [restaurant, goal],
+    [business, goal],
   );
 
   function continueSignup() {
     setGuestDraft({
       id: "draft-guest",
-      restaurantName: restaurant,
+      businessName: business,
       goal,
     });
     router.push("/register/business");
@@ -82,10 +83,10 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
 
         {step === 0 ? (
           <ClarifyChips
-            question="Which restaurant is this campaign for?"
-            options={["As I Am by Chef Ton", "SOOD Penang", "I'll type it later"]}
+            question="Which business is this campaign for?"
+            options={[...SAMPLE_BRANDS, "I'll type it later"]}
             onPick={(v) => {
-              setRestaurant(v === "I'll type it later" ? "To confirm" : v);
+              setBusiness(v === "I'll type it later" ? "To confirm" : v);
               setStep(1);
             }}
           />
@@ -94,7 +95,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
         {step === 1 ? (
           <ClarifyChips
             question="Should this content drive bookings, or something else?"
-            options={["Bookings", "A new menu", "A promotion", "Awareness"]}
+            options={["Bookings", "A new offer", "A promotion", "Awareness"]}
             onPick={(v) => {
               setGoal(v);
               setStep(2);
@@ -105,7 +106,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
         {step === 2 ? (
           <div className="space-y-4">
             <p className="text-[17px] font-medium text-ink">
-              A first brief. Nothing here is verified until you confirm the outlet.
+              A first brief. Nothing here is verified until you confirm the brand.
             </p>
             {cards.map((card) => (
               <ActionCard key={card.id} card={card} />

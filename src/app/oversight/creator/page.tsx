@@ -15,7 +15,7 @@ type CreatorRow = {
   lifetimeEarned: number;
   campaigns: {
     name: string;
-    restaurant: string;
+    business: string;
     status: string;
     earned: number;
   }[];
@@ -34,13 +34,13 @@ const CREATORS: CreatorRow[] = [
     campaigns: [
       {
         name: "Tasting menu reel",
-        restaurant: "As I Am by Chef Ton",
+        business: "As I Am by Chef Ton",
         status: "Live",
         earned: 1200,
       },
       {
         name: "SOOD lunch hook",
-        restaurant: "SOOD Penang",
+        business: "SOOD Penang",
         status: "In review",
         earned: 650,
       },
@@ -137,7 +137,7 @@ export default function CreatorPerformancePage() {
                   <div>
                     <p className="font-medium text-ink">{c.name}</p>
                     <p className="mt-1 text-sm text-muted">
-                      {c.restaurant} · {c.status}
+                      {c.business} · {c.status}
                     </p>
                   </div>
                   <p className="font-mono text-[13px] text-ink">{rm(c.earned)}</p>

@@ -1,4 +1,9 @@
-import type { PipelineStep, ReviewJob, ReviewWaitingOn } from "@/lib/types";
+import type {
+  PipelineStep,
+  ReviewJob,
+  ReviewWaitingOn,
+} from "@/lib/types";
+import { PRICE } from "@/lib/credits";
 import { uid } from "@/lib/ids";
 
 export const PIPELINE_STEPS: {
@@ -8,8 +13,8 @@ export const PIPELINE_STEPS: {
 }[] = [
   {
     id: "script",
-    label: "01 Script + ingredients",
-    detail: "Script, dish photos, and ingredient list.",
+    label: "01 Script + assets",
+    detail: "Script, reference images, and product or service notes.",
   },
   {
     id: "rough",
@@ -23,12 +28,63 @@ export const PIPELINE_STEPS: {
   },
 ];
 
+export const AISHA_CREATOR_ID = "cws-aisha";
+export const ASIAM_BUSINESS_ID = "bws-asiam";
+
+export const SAMPLE_BRANDS = [
+  "As I Am by Chef Ton",
+  "Klinik Harmoni",
+  "Atelier Atas",
+] as const;
+
+export function newReviewJob(input: {
+  title: string;
+  kind: ReviewJob["kind"];
+  businessId: string;
+  businessName: string;
+  priceCredits: number;
+  script: string;
+  notes?: ReviewJob["notes"];
+  photoLabels?: string[];
+}): ReviewJob {
+  return {
+    id: uid("rev"),
+    title: input.title,
+    kind: input.kind,
+    businessId: input.businessId,
+    businessName: input.businessName,
+    creatorName: "Aisha",
+    kolName: "Mei Lin",
+    step: "script",
+    waitingOn: "business",
+    revisionsUsed: 0,
+    maxRevisions: 1,
+    script: input.script,
+    notes: input.notes ?? [
+      { name: "Offer", note: "Name the brand once. No unverified claims." },
+    ],
+    photoLabels: input.photoLabels ?? ["Hero", "Space", "Close"],
+    roughCaption: `Mei Lin · rough AI cut · ${input.title}`,
+    editedCaption: `Mei Lin · edited · ${input.title}`,
+    priceCredits: input.priceCredits,
+    adminLog: [
+      {
+        id: uid("log"),
+        text: `Job opened. Linked creator Aisha · KOL Mei Lin. Hold ${input.priceCredits} credits.`,
+        at: "Just now",
+      },
+    ],
+  };
+}
+
 export function seedReviews(): ReviewJob[] {
   return [
     {
       id: "rev-asiam",
       title: "Tasting menu reel",
-      restaurant: "As I Am by Chef Ton",
+      kind: "campaign",
+      businessId: ASIAM_BUSINESS_ID,
+      businessName: "As I Am by Chef Ton",
       creatorName: "Aisha",
       kolName: "Mei Lin",
       step: "script",
@@ -36,15 +92,16 @@ export function seedReviews(): ReviewJob[] {
       revisionsUsed: 0,
       maxRevisions: 1,
       script:
-        "Open on the tasting tray. Soft voice: ‘This is As I Am — not loud, just precise.’ Name the outlet once. Close with booking CTA. Paid partnership line at end.",
-      ingredients: [
-        { name: "River prawn", note: "Hero protein · show shell flash" },
+        "Open on the tasting tray. Soft voice: ‘This is As I Am — not loud, just precise.’ Name the brand once. Close with booking CTA. Paid partnership line at end.",
+      notes: [
+        { name: "River prawn", note: "Hero product · show once, no health claims" },
         { name: "Tom yum foam", note: "Do not claim ‘secret recipe’" },
-        { name: "Torch ginger", note: "Visual only · no health claims" },
+        { name: "Torch ginger", note: "Visual only" },
       ],
       photoLabels: ["Tray wide", "Prawn detail", "Dining room night"],
       roughCaption: "Mei Lin · rough AI cut · tasting menu",
       editedCaption: "Mei Lin · edited · tasting menu",
+      priceCredits: PRICE.campaign,
       adminLog: [
         {
           id: "log-1",
@@ -56,7 +113,9 @@ export function seedReviews(): ReviewJob[] {
     {
       id: "rev-sood",
       title: "SOOD lunch hook",
-      restaurant: "SOOD Penang",
+      kind: "campaign",
+      businessId: ASIAM_BUSINESS_ID,
+      businessName: "SOOD Penang",
       creatorName: "Aisha",
       kolName: "Mei Lin",
       step: "rough",
@@ -65,18 +124,49 @@ export function seedReviews(): ReviewJob[] {
       maxRevisions: 1,
       script:
         "15s lunch hook. Show SOOD storefront. One bite. ‘Penang lunch, no queue theatre.’",
-      ingredients: [
+      notes: [
         { name: "Char kway teow", note: "Hero dish" },
         { name: "Prawn", note: "Show size once" },
       ],
       photoLabels: ["Storefront", "Wok flash", "Plate"],
       roughCaption: "Mei Lin · rough AI cut · SOOD lunch",
       editedCaption: "Mei Lin · edited · SOOD lunch",
+      priceCredits: PRICE.campaign,
       adminLog: [
         {
           id: "log-2",
           text: "Script approved by business. Rough AI cut ready for review.",
           at: "2h ago",
+        },
+      ],
+    },
+    {
+      id: "rev-klinik",
+      title: "Klinik Harmoni intro",
+      kind: "campaign",
+      businessId: ASIAM_BUSINESS_ID,
+      businessName: "Klinik Harmoni",
+      creatorName: "Aisha",
+      kolName: "Mei Lin",
+      step: "edited",
+      waitingOn: "creator",
+      revisionsUsed: 0,
+      maxRevisions: 1,
+      script:
+        "Calm clinic walk-in. Name Klinik Harmoni once. No medical claims. Close with WhatsApp booking.",
+      notes: [
+        { name: "Waiting room", note: "Quiet, no patient faces" },
+        { name: "Front desk", note: "Show hours board" },
+      ],
+      photoLabels: ["Facade", "Reception", "Consult room empty"],
+      roughCaption: "Mei Lin · rough AI cut · clinic intro",
+      editedCaption: "Mei Lin · edited · clinic intro",
+      priceCredits: PRICE.campaign,
+      adminLog: [
+        {
+          id: "log-3",
+          text: "Rough approved. Creator producing edited video (1 revision allowed).",
+          at: "1d ago",
         },
       ],
     },
@@ -108,23 +198,39 @@ export function waitingLabel(waitingOn: ReviewWaitingOn): string {
   }
 }
 
+export function waitingTone(
+  waitingOn: ReviewWaitingOn,
+): "neutral" | "action" | "ok" | "warn" | "bad" {
+  switch (waitingOn) {
+    case "business":
+      return "action";
+    case "creator":
+      return "warn";
+    case "admin":
+      return "bad";
+    case "done":
+      return "ok";
+    default: {
+      const _exhaustive: never = waitingOn;
+      return _exhaustive;
+    }
+  }
+}
+
+function logLine(text: string) {
+  return { id: uid("log"), text, at: "Just now" };
+}
+
 export function applyBusinessDecision(
   job: ReviewJob,
   decision: "approve" | "revise" | "escalate",
 ): ReviewJob {
-  const stamp = "Just now";
-  const log = (text: string) => ({
-    id: uid("log"),
-    text,
-    at: stamp,
-  });
-
   if (decision === "escalate") {
     return {
       ...job,
       waitingOn: "admin",
       adminLog: [
-        log("Business escalated to admin. Needs platform decision."),
+        logLine("Business escalated to admin. Needs platform decision."),
         ...job.adminLog,
       ],
     };
@@ -136,7 +242,7 @@ export function applyBusinessDecision(
         ...job,
         waitingOn: "admin",
         adminLog: [
-          log("Revision limit reached. Auto-escalated to admin."),
+          logLine("Revision limit reached. Auto-escalated to admin."),
           ...job.adminLog,
         ],
       };
@@ -146,7 +252,7 @@ export function applyBusinessDecision(
       revisionsUsed: job.revisionsUsed + 1,
       waitingOn: "creator",
       adminLog: [
-        log(
+        logLine(
           `Business requested edit revision (${job.revisionsUsed + 1}/${job.maxRevisions}). Creator notified.`,
         ),
         ...job.adminLog,
@@ -154,15 +260,14 @@ export function applyBusinessDecision(
     };
   }
 
-  // approve
   if (job.step === "script") {
     return {
       ...job,
       step: "rough",
       waitingOn: "business",
       adminLog: [
-        log(
-          "Business approved script + ingredients. Rough AI video generated. Creator linked.",
+        logLine(
+          "Business approved script + assets. Rough AI video generated. Creator linked.",
         ),
         ...job.adminLog,
       ],
@@ -174,7 +279,7 @@ export function applyBusinessDecision(
       step: "edited",
       waitingOn: "creator",
       adminLog: [
-        log(
+        logLine(
           "Business approved rough cut. Creator producing edited video (1 revision allowed).",
         ),
         ...job.adminLog,
@@ -185,22 +290,91 @@ export function applyBusinessDecision(
     ...job,
     waitingOn: "done",
     adminLog: [
-      log("Business approved edited video. Ready to publish. Admin notified."),
+      logLine("Business approved edited video. Ready to publish. Admin notified."),
       ...job.adminLog,
     ],
   };
 }
 
-export function creatorMarksEditedReady(job: ReviewJob): ReviewJob {
+export function applyCreatorAdvance(job: ReviewJob): ReviewJob {
+  if (job.waitingOn !== "creator") return job;
+
+  if (job.step === "script") {
+    return {
+      ...job,
+      waitingOn: "business",
+      adminLog: [
+        logLine("Creator submitted script + assets for business review."),
+        ...job.adminLog,
+      ],
+    };
+  }
+  if (job.step === "rough") {
+    return {
+      ...job,
+      waitingOn: "business",
+      roughCaption: `${job.kolName} · creator cut · ${job.title}`,
+      adminLog: [
+        logLine("Creator replaced the AI rough and submitted for business review."),
+        ...job.adminLog,
+      ],
+    };
+  }
   return {
     ...job,
     waitingOn: "business",
     adminLog: [
-      {
-        id: uid("log"),
-        text: "Creator submitted edited video for business review.",
-        at: "Just now",
-      },
+      logLine("Creator submitted edited video for business review."),
+      ...job.adminLog,
+    ],
+  };
+}
+
+export function applyAdminDecision(
+  job: ReviewJob,
+  decision: "approve" | "return_creator" | "take_queue",
+): ReviewJob {
+  if (decision === "take_queue") {
+    return {
+      ...job,
+      waitingOn: "admin",
+      adminLog: [
+        logLine("Admin pulled this job into the QC queue."),
+        ...job.adminLog,
+      ],
+    };
+  }
+  if (decision === "return_creator") {
+    return {
+      ...job,
+      waitingOn: "creator",
+      adminLog: [
+        logLine("Admin returned the job to the creator."),
+        ...job.adminLog,
+      ],
+    };
+  }
+  const advanced = applyBusinessDecision(job, "approve");
+  return {
+    ...advanced,
+    adminLog: [
+      logLine("Admin approved this step on behalf of the platform."),
+      ...advanced.adminLog,
+    ],
+  };
+}
+
+export function linkCreator(
+  job: ReviewJob,
+  creatorName: string,
+  kolName: string,
+): ReviewJob {
+  return {
+    ...job,
+    creatorName,
+    kolName,
+    adminLog: [
+      logLine(`Admin linked creator ${creatorName} · KOL ${kolName}.`),
       ...job.adminLog,
     ],
   };

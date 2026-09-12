@@ -18,6 +18,9 @@ export function OversightShell({
           <Link className="block rounded-[10px] bg-elevated px-3 py-2 text-ink" href="/oversight/manager">
             Queue
           </Link>
+          <Link className="block px-3 py-2 text-muted hover:text-ink" href="/oversight/manager?tab=credits">
+            Credits
+          </Link>
           <Link className="block px-3 py-2 text-muted hover:text-ink" href="/oversight/business">
             Business
           </Link>

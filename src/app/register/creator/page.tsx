@@ -30,7 +30,7 @@ export default function RegisterCreatorPage() {
       <Button
         className="mt-6 min-h-14 w-full"
         onClick={() => {
-          registerCreator(name || "Creator", "creator@haola.my");
+          registerCreator(name || "Creator", "creator@fxgen.my");
           router.push("/work/studio");
         }}
       >

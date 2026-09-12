@@ -1,6 +1,6 @@
 # fxgen
 
-Virtual KOL marketplace for restaurants. Dark canvas, purple act, AI as the operating layer.
+Virtual KOL marketplace for Malaysian SMEs. Dark canvas, purple accent, AI as the operating layer.
 
 ## Preview
 

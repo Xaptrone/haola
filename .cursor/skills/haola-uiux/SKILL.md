@@ -13,9 +13,9 @@ description: >-
 Read this first on any visual work in this repo. Then load **one** upstream skill.
 
 **Design read (always state before coding):**
-*"Reading this as: [surface] for [creator | restaurant owner | manager], cinematic dark editorial, purple spark, native-app on mobile / canvas on creator desktop."*
+*"Reading this as: [surface] for [creator | business owner | manager], cinematic dark editorial, purple spark, native-app on mobile / canvas on creator desktop."*
 
-fxgen is a virtual-KOL marketplace for Malaysian F&B. Young, intelligent, premium, fast. AI is the operating layer, not a chatbot widget.
+fxgen is a virtual-KOL marketplace for Malaysian SMEs. Young, intelligent, premium, fast. AI is the operating layer, not a chatbot widget.
 
 ## Brand (this file wins — do not "improve" these away)
 

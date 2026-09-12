@@ -15,8 +15,9 @@ import type {
   CreatorWorkspace,
   Session,
 } from "./types";
+import { ASIAM_BUSINESS_ID, AISHA_CREATOR_ID } from "./review";
 
-const STORAGE_KEY = "haola.session.v1";
+const STORAGE_KEY = "fxgen.session.v1";
 
 const emptySession = (): Session => ({
   role: "anonymous",
@@ -31,8 +32,8 @@ function sampleKol(): CreatorWorkspace["kols"][number] {
     id: "kol-mei",
     name: "Mei Lin",
     market: "Penang & KL",
-    audience: "25–34 food explorers",
-    categories: "Thai fine dining, night markets",
+    audience: "25–34 locals who follow brands, not ads",
+    categories: "Lifestyle, services, F&B",
     language: "EN / 中文",
     personality: "Warm, precise, never shouty",
     amf: 82,
@@ -60,11 +61,12 @@ function newBusinessWorkspace(
     kind: "business",
     id: uid("bws"),
     name,
-    restaurants: guestDraft
+    seat: "owner",
+    brands: guestDraft
       ? [
           {
-            id: uid("rst"),
-            name: guestDraft.restaurantName,
+            id: uid("brd"),
+            name: guestDraft.businessName,
             city: "Malaysia",
             outlets: "To confirm",
           },
@@ -78,7 +80,7 @@ function newBusinessWorkspace(
           {
             id: "draft-continue",
             title: "Continue your campaign",
-            detail: `${guestDraft.restaurantName} · ${guestDraft.goal}`,
+            detail: `${guestDraft.businessName} · ${guestDraft.goal}`,
             href: "/work/business?flow=campaign",
             tone: "action",
           },
@@ -86,7 +88,7 @@ function newBusinessWorkspace(
       : [
           {
             id: "setup",
-            title: "Set up your restaurant",
+            title: "Set up your business",
             detail: "AI will ask three questions. No long form.",
             href: "/work/business?flow=setup",
             tone: "action",
@@ -102,11 +104,12 @@ const readyBusiness = (): Session => ({
   creatorWorkspace: null,
   businessWorkspace: {
     kind: "business",
-    id: "bws-asiam",
+    id: ASIAM_BUSINESS_ID,
     name: "As I Am by Chef Ton",
-    restaurants: [
+    seat: "owner",
+    brands: [
       {
-        id: "rst-asiam",
+        id: "brd-asiam",
         name: "As I Am by Chef Ton",
         city: "Kuala Lumpur",
         outlets: "One outlet",
@@ -118,9 +121,9 @@ const readyBusiness = (): Session => ({
     feed: [
       {
         id: "rev-2",
-        title: "Two videos need your review",
-        detail: "Mei Lin · tasting menu reel",
-        href: "/work/review",
+        title: "Videos waiting on you",
+        detail: "Script, rough, and edited gates",
+        href: "/work/business?tab=content",
         tone: "action",
       },
       {
@@ -134,7 +137,7 @@ const readyBusiness = (): Session => ({
         id: "ai",
         title: "AI recommends a weekday lunch hook",
         detail: "Your last reel over-indexed after 8pm.",
-        href: "/work/business?flow=campaign",
+        href: "/work/business?tab=create",
         tone: "info",
       },
     ],
@@ -148,7 +151,7 @@ const activeCreator = (): Session => ({
   businessWorkspace: null,
   creatorWorkspace: {
     kind: "creator",
-    id: "cws-aisha",
+    id: AISHA_CREATOR_ID,
     name: "Aisha's studio",
     kols: [sampleKol()],
     canvasIntent: null,
@@ -162,15 +165,15 @@ const activeCreator = (): Session => ({
       },
       {
         id: "match",
-        title: "As I Am matches Mei at 91%",
-        detail: "Accept campaign or compare KOLs",
+        title: "Jobs waiting in your studio",
+        detail: "Submit the next pipeline step",
         href: "/work/studio?tab=campaigns",
         tone: "action",
       },
       {
         id: "pay",
-        title: "RM500 is available for payout",
-        detail: "Approved content · Mar",
+        title: "Earnings land in credits after approval",
+        detail: "Payout rail comes later",
         href: "/work/studio?tab=profile",
         tone: "money",
       },
@@ -220,7 +223,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           session: Session;
           guestDraft: CampaignDraft | null;
         };
-        setSession(parsed.session);
+        const loaded = parsed.session;
+        if (loaded.businessWorkspace) {
+          loaded.businessWorkspace = {
+            ...loaded.businessWorkspace,
+            seat: loaded.businessWorkspace.seat ?? "owner",
+            brands: loaded.businessWorkspace.brands ?? [],
+          };
+        }
+        // Restore session after mount (SSR-safe).
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage rehydrate
+        setSession(loaded);
         setGuestDraft(parsed.guestDraft);
       }
     } catch {
@@ -314,9 +327,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     if (id === "business-draft") {
       const draft: CampaignDraft = {
         id: "draft-guest",
-        restaurantName: "As I Am by Chef Ton",
+        businessName: "As I Am by Chef Ton",
         goal: "Bookings",
-        story: "Tasting menu for first-time diners",
+        story: "Tasting menu for first-time visitors",
       };
       setGuestDraft(draft);
       setSession({
@@ -336,7 +349,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setSession({
       role: "manager",
       displayName: "Nadia",
-      email: "nadia@haola.my",
+      email: "nadia@fxgen.my",
       creatorWorkspace: null,
       businessWorkspace: null,
     });

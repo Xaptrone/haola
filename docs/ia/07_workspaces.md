@@ -64,10 +64,10 @@ Provisioned **atomically at business registration**. Login always enters this wo
 
 Created with:
 
-- Organisation + owner
-- `restaurants[]` (empty until setup)
-- `campaigns[]`
-- `onboardingStage`: `welcome` → `restaurant` → `goal` → `ready`
+- Organisation + owner (seat: owner | marketing)
+- `brands[]` (empty until setup)
+- `campaigns[]` / review jobs / Brand IP jobs
+- `onboardingStage`: `welcome` → `business` → `goal` → `ready`
 - `guestDraftId` if they started a campaign on the marketing landing
 
 ### Register
@@ -80,15 +80,15 @@ Created with:
 ### Login routing (strict order)
 
 1. If `guestDraftId` or unfinished campaign draft → AI campaign builder with that draft.
-2. Else if `onboardingStage !== ready` → AI restaurant setup (not a 12-field form).
+2. Else if `onboardingStage !== ready` → AI business setup (not a 12-field form).
 3. Else → Home action feed.
 
 ### Mobile (`< lg`)
 
 - Bottom nav: Home · Campaigns · **Create** · Content · Business
-- Create starts the AI campaign builder
-- Home answers: what needs approval, what is due, what AI recommends
-- Restaurant setup, campaign create, content approval, payouts = sheets and step flows
+- Create starts Campaign / Brand IP / Content pack
+- Home answers: what needs approval, what is due, what AI recommends, credit spend (owner)
+- Business setup, create intents, content approval, credits = sheets and step flows
 
 ### Desktop (`>= lg`) — command workspace
 
@@ -102,21 +102,21 @@ After login they get a **command workspace**:
 - Content waiting for approval opens a split review (video + decision)
 - Performance dashboard is a destination (`/oversight/business`), not the login landing
 
-Campaign creation on desktop can use a **focused canvas** (brief card + recommended KOLs) — a working board, not an empty artboard. If they have no restaurant yet, the board is the setup conversation, not a blank studio.
+Campaign creation on desktop can use a **focused canvas** (brief card + recommended KOLs) — a working board, not an empty artboard. If they have no brand yet, the board is the setup conversation, not a blank studio.
 
 ### First-run (no guest draft)
 
 AI asks, with chips:
 
-- Which restaurant / outlet is this workspace for?
-- One outlet or a group?
-- First goal: bookings, a new menu, a promotion, or brand awareness?
+- Which business is this workspace for?
+- One location or a group?
+- First goal: bookings, a new offer, a promotion, or brand awareness?
 
-Then it writes a restaurant card + optional first campaign brief. Owner accepts or edits. `onboardingStage` becomes `ready`.
+Then it writes a brand card + optional first campaign brief. Owner accepts or edits. `onboardingStage` becomes `ready`.
 
 ### First-run (from landing guest prompt)
 
-Workspace opens with the draft campaign brief and recommended KOL cards already on the board. Primary action: Continue · Edit · Save draft. Restaurant facts still go through clarify-if-missing — never invent outlet or price.
+Workspace opens with the draft campaign brief and recommended KOL cards already on the board. Primary action: Continue · Edit · Save draft. Brand facts still go through clarify-if-missing — never invent location or price.
 
 ---
 
@@ -139,7 +139,7 @@ Every workspace session injects:
 
 - `workspaceId`, `workspaceKind` (`creator` | `business`)
 - user, role
-- current restaurant (business) or current KOL (creator)
+- current brand (business) or current KOL (creator)
 - current campaign, stage
 - known platform facts vs missing facts
 - permission boundary (cannot approve own QC as manager unless role allows)

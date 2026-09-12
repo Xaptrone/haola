@@ -21,7 +21,7 @@ export default function RegisterBusinessPage() {
       </h1>
       <p className="mt-3 text-sm leading-6 text-muted">
         {guestDraft
-          ? `Your ${guestDraft.restaurantName} draft comes with you.`
+          ? `Your ${guestDraft.businessName} draft comes with you.`
           : "The workspace exists the moment you continue. Setup happens inside, with AI."}
       </p>
       <input
@@ -39,7 +39,7 @@ export default function RegisterBusinessPage() {
       <Button
         className="mt-6 min-h-14 w-full"
         onClick={() => {
-          registerBusiness(name || "Owner", email || "owner@haola.my");
+          registerBusiness(name || "Owner", email || "owner@fxgen.my");
           router.push("/work/business");
         }}
       >

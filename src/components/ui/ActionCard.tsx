@@ -15,7 +15,8 @@ export type CardKind =
   | "revision"
   | "approval"
   | "payment"
-  | "restaurant";
+  | "business"
+  | "ip";
 
 export type ActionCardModel = {
   id: string;

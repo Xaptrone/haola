@@ -1,12 +1,12 @@
-# Project Haola — Interface principles
+# fxgen — Interface principles
 
-Haola is a virtual-KOL marketplace for F&B. The interface is AI-native from the first screen. Do not build a form-heavy admin tool and add a chatbot later.
+fxgen is a virtual-KOL marketplace for Malaysian SMEs. The interface is AI-native from the first screen. Do not build a form-heavy admin tool and add a chatbot later.
 
 ## Four surfaces
 
-1. **Marketing** — public acquisition. Primary audience: restaurant / business owners.
+1. **Marketing** — public acquisition. Primary audience: business owners.
 2. **Creator workspace (studio)** — where creators make virtual KOLs and content. Mobile app, desktop canvas, blank canvas zero-state.
-3. **Business workspace** — provisioned on register, entered on login. Restaurant setup, campaigns, approvals, payouts.
+3. **Business workspace** — provisioned on register, entered on login. Brand setup, campaigns, Brand IP, content packs, approvals, credits.
 4. **Oversight dashboards** — Super Admin, Admin, Manager, performance, finance. Monitoring only.
 
 ## Rules

@@ -1,57 +1,75 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
-import { ActionCard } from "@/components/ui/ActionCard";
-import { VerticalVideo } from "@/components/ui/VerticalVideo";
-import { useDesktop } from "@/lib/use-desktop";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { ReviewPipeline } from "@/components/review/ReviewPipeline";
+import { ActionFeed } from "@/components/feed/ActionFeed";
+import { useMarketplace } from "@/lib/marketplace";
+import { useSession } from "@/lib/session";
+import { MobileAppShell } from "@/components/shells/WorkShells";
+import { managerNav } from "@/lib/nav";
 
-export default function ReviewPage() {
-  const desktop = useDesktop();
+function ReviewBody() {
+  const id = useSearchParams().get("id");
+  const market = useMarketplace();
+  const { session } = useSession();
+  const actor =
+    session.role === "creator"
+      ? "creator"
+      : session.role === "manager"
+        ? "admin"
+        : "business";
+  const job = market.reviews.find((j) => j.id === id) ?? null;
+  const open = market.reviews.filter((j) => j.waitingOn !== "done");
 
-  const decision = (
-    <div className="space-y-4">
-      <ActionCard
-        card={{
-          id: "qc",
-          kind: "qc",
-          title: "QC report",
-          provenance: "ai",
-          rows: [
-            { label: "Outlet named", value: "As I Am", provenance: "verified" },
-            { label: "Taste claim", value: "Needs confirmation", provenance: "ai" },
-            { label: "Disclosure", value: "Missing paid-partnership line", provenance: "ai" },
-          ],
-          actions: [],
-        }}
+  const list = (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-medium tracking-tight">Reviews</h1>
+      <ActionFeed
+        items={open.map((j) => ({
+          id: j.id,
+          title: j.title,
+          detail: `${j.businessName} · ${j.step} · ${j.waitingOn}`,
+          href: `/work/review?id=${j.id}`,
+        }))}
       />
-      <div className="flex gap-2">
-        <Button className="min-h-14 flex-1">Approve</Button>
-        <Button variant="ghost" className="min-h-14 flex-1">
-          Request revision
-        </Button>
-      </div>
     </div>
   );
 
-  if (desktop) {
+  const pipeline = job ? (
+    <ReviewPipeline
+      job={job}
+      actor={actor}
+      onChange={(next) => market.patchReview(next.id, next)}
+      onFinalApprove={(next) => {
+        market.patchReview(next.id, next);
+        market.releaseJob(next, session.displayName || "Nadia");
+      }}
+    />
+  ) : (
+    list
+  );
+
+  if (session.role === "manager") {
     return (
-      <div className="grid min-h-dvh grid-cols-[minmax(280px,42%)_1fr]">
-        <div className="flex items-center justify-center border-r border-line bg-canvas p-8">
-          <div className="w-full max-w-[280px]">
-            <VerticalVideo caption="Mei Lin · tasting menu" />
-          </div>
+      <>
+        <MobileAppShell title="Reviews" items={managerNav} active="reviews">
+          {pipeline}
+        </MobileAppShell>
+        <div className="hidden min-h-dvh bg-canvas px-8 py-10 lg:block">
+          <div className="mx-auto max-w-3xl">{pipeline}</div>
         </div>
-        <div className="overflow-auto p-10">{decision}</div>
-      </div>
+      </>
     );
   }
 
+  return <div className="min-h-dvh bg-canvas px-5 py-6 lg:px-10">{pipeline}</div>;
+}
+
+export default function ReviewPage() {
   return (
-    <div className="min-h-dvh bg-canvas">
-      <div className="mx-auto max-w-sm px-4 pt-4">
-        <VerticalVideo caption="Mei Lin · tasting menu" className="w-full" />
-      </div>
-      <div className="px-5 py-6">{decision}</div>
-    </div>
+    <Suspense fallback={<div className="min-h-dvh bg-canvas" />}>
+      <ReviewBody />
+    </Suspense>
   );
 }
