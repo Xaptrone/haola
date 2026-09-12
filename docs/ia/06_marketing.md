@@ -17,7 +17,7 @@ In under 10 seconds: virtual KOLs make content for my business. One action: Star
 
 ## Guest AI
 
-CTA opens the campaign prompt. One or two clarify questions, then sample brief + recommended KOL cards. Continue → business register → draft attaches to the new **business workspace**.
+CTA opens the campaign prompt. One or two clarify questions, then sample brief + recommended KOL cards. Continue → Google login → draft attaches to the new **business workspace**.
 
 Do not lead with Book a demo. Groups/chains may have a muted contact link.
 

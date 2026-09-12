@@ -1,58 +1,63 @@
-"use client";
+import Link from "next/link";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { GoogleButton } from "@/components/auth/GoogleButton";
+import { auth, googleAuthConfigured } from "@/auth";
+import { redirect } from "next/navigation";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
-import { useSession } from "@/lib/session";
+export const dynamic = "force-dynamic";
 
-export default function LoginPage() {
-  const { loginReadyBusiness, loginActiveCreator, loginManager } = useSession();
-  const router = useRouter();
-  const [email, setEmail] = useState("");
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ intent?: string; next?: string; error?: string }>;
+}) {
+  const session = await auth();
+  const { intent, next, error } = await searchParams;
+  if (session?.user) {
+    redirect(next || (intent ? `/start?intent=${intent}` : "/start"));
+  }
+
+  const configured = googleAuthConfigured();
+  const callbackUrl = `/start${intent ? `?intent=${intent}` : ""}${
+    next ? `${intent ? "&" : "?"}next=${encodeURIComponent(next)}` : ""
+  }`;
+
+  const errorCopy =
+    error === "Configuration"
+      ? "Google sign-in is not configured on this server yet."
+      : error
+        ? "Google sign-in didn't complete. Try again."
+        : null;
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6">
-      <h1 className="text-[32px] font-semibold tracking-[-0.03em]">Log in</h1>
-      <p className="mt-2 text-sm text-muted">
-        Demo: pick a workspace. Real auth comes later.
+      <BrandLogo height={26} />
+      <h1 className="mt-8 text-[32px] font-semibold tracking-[-0.03em]">
+        Log in
+      </h1>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        Continue with the Google account you use for work.
       </p>
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
-        className="mt-8 min-h-14 rounded-[14px] border border-line bg-surface px-4 text-ink outline-none placeholder:text-muted"
-      />
-      <div className="mt-6 space-y-2">
-        <Button
-          className="min-h-14 w-full"
-          onClick={() => {
-            loginReadyBusiness();
-            router.push("/work/business");
-          }}
-        >
-          Enter business workspace
-        </Button>
-        <Button
-          variant="ghost"
-          className="min-h-14 w-full"
-          onClick={() => {
-            loginActiveCreator();
-            router.push("/work/studio");
-          }}
-        >
-          Enter creator studio
-        </Button>
-        <Button
-          variant="quiet"
-          className="min-h-14 w-full"
-          onClick={() => {
-            loginManager();
-            router.push("/oversight/manager");
-          }}
-        >
-          Enter manager
-        </Button>
+      {errorCopy ? (
+        <p className="mt-4 text-sm text-rose">{errorCopy}</p>
+      ) : null}
+      <div className="mt-8">
+        <GoogleButton callbackUrl={callbackUrl} />
+        {!configured ? (
+          <p className="mt-4 text-sm text-muted">
+            Set <span className="font-mono text-ink">AUTH_GOOGLE_ID</span> and{" "}
+            <span className="font-mono text-ink">AUTH_GOOGLE_SECRET</span> on
+            the server, then add redirect{" "}
+            <span className="font-mono text-ink">
+              /api/auth/callback/google
+            </span>{" "}
+            in Google Cloud.
+          </p>
+        ) : null}
       </div>
+      <Link href="/" className="mt-8 text-center text-sm text-muted">
+        Back
+      </Link>
     </div>
   );
 }

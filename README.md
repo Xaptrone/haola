@@ -5,11 +5,16 @@ Virtual KOL marketplace for Malaysian SMEs. Dark canvas, purple accent, AI as th
 ## Preview
 
 ```bash
+cp .env.example .env.local
+# set AUTH_SECRET (openssl rand -base64 32)
+# set AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Bottom-left **Demo** switches surfaces.
+Open [http://localhost:3000](http://localhost:3000). Log in with Google. Surfaces behind `?preview=1` are internal only.
+
+Google Cloud: authorized redirect `{origin}/api/auth/callback/google`. Production origin: `https://haola.escor.ai`.
 
 ## Design
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 export function OversightShell({
   title,
@@ -30,8 +31,9 @@ export function OversightShell({
         </nav>
       </aside>
       <div>
-        <header className="border-b border-line px-5 py-4 lg:px-8">
+        <header className="flex items-center justify-between border-b border-line px-5 py-4 lg:px-8">
           <h1 className="text-lg font-medium text-ink">{title}</h1>
+          <SignOutButton />
         </header>
         <main className="px-5 py-6 lg:px-8">{children}</main>
       </div>

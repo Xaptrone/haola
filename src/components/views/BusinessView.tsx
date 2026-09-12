@@ -15,6 +15,8 @@ import { businessNav } from "@/lib/nav";
 import { newReviewJob, SAMPLE_BRANDS } from "@/lib/review";
 import { useSession } from "@/lib/session";
 import type { BusinessSeat, ReviewJob } from "@/lib/types";
+import { SignOutButton } from "@/components/auth/SignOutButton";
+import { NeedWorkspace } from "@/components/auth/NeedWorkspace";
 import { BusinessCreate } from "./BusinessCreate";
 
 export function BusinessView() {
@@ -48,11 +50,7 @@ export function BusinessView() {
     : [];
 
   if (!ws || session.role !== "business") {
-    return (
-      <div className="flex min-h-dvh items-center justify-center px-6 text-center">
-        <p className="text-muted">Open Demo → Business · first login</p>
-      </div>
-    );
+    return <NeedWorkspace kind="business" />;
   }
 
   const needsSetup = ws.onboardingStage !== "ready" && !ws.guestDraft;
@@ -354,6 +352,7 @@ export function BusinessView() {
                 </p>
                 <LedgerList entries={ledgerMine} />
               </div>
+              <SignOutButton />
             </div>
           ) : null}
 

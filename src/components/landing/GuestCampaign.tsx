@@ -61,7 +61,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
       businessName: business,
       goal,
     });
-    router.push("/register/business");
+    router.push("/login?intent=business");
   }
 
   return (
@@ -115,7 +115,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
               Continue with this draft
             </Button>
             <p className="text-center text-xs text-muted">
-              Creates your business workspace and saves the draft.
+              Log in with Google to keep this draft in your workspace.
             </p>
           </div>
         ) : null}

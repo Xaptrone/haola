@@ -51,7 +51,7 @@ function seedState(): MarketplaceState {
     businessId: ASIAM_BUSINESS_ID,
     amount: 5000,
     actor: "Nadia",
-    note: "Opening balance · demo",
+    note: "Opening balance",
     idempotencyKey: "topup:seed:bws-asiam",
   });
   ledger = top.entries;

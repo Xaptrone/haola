@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { AdminTopup, LedgerList } from "@/components/credits/LedgerPanel";
 import { OversightShell } from "@/components/shells/OversightShell";
+import { StaffGate } from "@/components/auth/StaffGate";
 import { useMarketplace } from "@/lib/marketplace";
 
 function ManagerHome() {
@@ -79,7 +80,9 @@ function Metric({
 export default function ManagerOversightPage() {
   return (
     <Suspense fallback={<div className="min-h-dvh bg-canvas" />}>
-      <ManagerHome />
+      <StaffGate>
+        <ManagerHome />
+      </StaffGate>
     </Suspense>
   );
 }

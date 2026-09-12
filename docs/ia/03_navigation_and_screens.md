@@ -25,8 +25,8 @@ Not charts. Feed of: needs attention, do next, what changed, AI recommends.
 ## Phase 1 coded screens
 
 - `/` business landing + guest AI
-- `/creators` thin waitlist
-- `/register/business` `/register/creator` `/login`
+- `/creators` creator door
+- `/login` `/start` Google sign-in then workspace pick
 - `/work/studio` creator workspace (blank canvas / canvas / mobile home)
 - `/work/business` business workspace (setup / draft / create intents / content pipeline)
 - `/work/review` 3-step review pipeline
@@ -40,8 +40,8 @@ Not charts. Feed of: needs attention, do next, what changed, AI recommends.
 ## Phase 1 coded screens
 
 - `/` business landing + guest AI
-- `/creators` thin waitlist
-- `/register/business` `/register/creator` `/login`
+- `/creators` creator door
+- `/login` `/start` Google sign-in then workspace pick
 - `/work/studio` creator workspace (blank canvas / canvas / mobile home)
 - `/work/business` business workspace (setup / draft / home)
 - `/work/review` video review (mobile full-screen, desktop split)

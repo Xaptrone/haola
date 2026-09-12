@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { BottomNav, type NavItem } from "@/components/nav/BottomNav";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 export function MobileAppShell({
   title,
@@ -24,10 +25,11 @@ export function MobileAppShell({
           : "workspace-root bg-canvas lg:hidden"
       }
     >
-      <header className="sticky top-0 z-30 border-b border-line bg-canvas/90 px-5 py-3 backdrop-blur-md">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-canvas/90 px-5 py-3 backdrop-blur-md">
         <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
           {title}
         </p>
+        <SignOutButton />
       </header>
       <main className={`flex-1 overflow-auto px-5 pt-6 ${contained ? "pb-24" : "pb-nav"}`}>
         {children}
@@ -59,6 +61,7 @@ export function StudioShell({
           <Link href="/oversight/creator" className="text-sm text-muted hover:text-ink">
             Performance
           </Link>
+          <SignOutButton />
         </div>
       </header>
       <div className="relative min-h-0 flex-1 overflow-auto">{children}</div>
@@ -84,9 +87,12 @@ export function CommandShell({
         <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
           {name}
         </p>
-        <Link href="/oversight/business" className="text-sm text-muted hover:text-ink">
-          Performance
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/oversight/business" className="text-sm text-muted hover:text-ink">
+            Performance
+          </Link>
+          <SignOutButton />
+        </div>
       </header>
       <div className="mx-auto w-full max-w-3xl flex-1 px-8 py-10">{children}</div>
       {composer ? (

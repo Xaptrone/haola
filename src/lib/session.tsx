@@ -17,7 +17,19 @@ import type {
 } from "./types";
 import { ASIAM_BUSINESS_ID, AISHA_CREATOR_ID } from "./review";
 
-const STORAGE_KEY = "fxgen.session.v1";
+const GUEST_KEY = "fxgen.guest.v1";
+
+export type AuthIdentity = {
+  id: string;
+  email: string;
+  name: string;
+  image?: string | null;
+  manager?: boolean;
+};
+
+function workspaceKey(id: string) {
+  return `fxgen.workspace.${id}`;
+}
 
 const emptySession = (): Session => ({
   role: "anonymous",
@@ -184,6 +196,7 @@ const activeCreator = (): Session => ({
 type SessionApi = {
   session: Session;
   ready: boolean;
+  identity: AuthIdentity | null;
   guestDraft: CampaignDraft | null;
   setGuestDraft: (draft: CampaignDraft | null) => void;
   registerCreator: (name: string, email: string) => void;
@@ -193,6 +206,7 @@ type SessionApi = {
   loginNewCreator: () => void;
   loginNewBusiness: () => void;
   loginManager: () => void;
+  enterManager: () => void;
   logout: () => void;
   patchCreator: (patch: Partial<CreatorWorkspace>) => void;
   patchBusiness: (patch: Partial<BusinessWorkspace>) => void;
@@ -210,45 +224,66 @@ export type DemoPreset =
 
 const SessionContext = createContext<SessionApi | null>(null);
 
-export function SessionProvider({ children }: { children: React.ReactNode }) {
+export function SessionProvider({
+  children,
+  identity,
+  authReady,
+}: {
+  children: React.ReactNode;
+  identity: AuthIdentity | null;
+  authReady: boolean;
+}) {
   const [session, setSession] = useState<Session>(emptySession);
   const [guestDraft, setGuestDraft] = useState<CampaignDraft | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (!authReady) return;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as {
-          session: Session;
-          guestDraft: CampaignDraft | null;
-        };
-        const loaded = parsed.session;
-        if (loaded.businessWorkspace) {
-          loaded.businessWorkspace = {
-            ...loaded.businessWorkspace,
-            seat: loaded.businessWorkspace.seat ?? "owner",
-            brands: loaded.businessWorkspace.brands ?? [],
-          };
+      const guestRaw = localStorage.getItem(GUEST_KEY);
+      if (guestRaw) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- guest draft rehydrate
+        setGuestDraft(JSON.parse(guestRaw) as CampaignDraft);
+      }
+      if (identity) {
+        const raw = localStorage.getItem(workspaceKey(identity.id));
+        if (raw) {
+          const parsed = JSON.parse(raw) as Session;
+          if (parsed.businessWorkspace) {
+            parsed.businessWorkspace = {
+              ...parsed.businessWorkspace,
+              seat: parsed.businessWorkspace.seat ?? "owner",
+              brands: parsed.businessWorkspace.brands ?? [],
+            };
+          }
+          setSession({
+            ...parsed,
+            displayName: parsed.displayName || identity.name,
+            email: identity.email,
+          });
+        } else {
+          setSession({
+            ...emptySession(),
+            displayName: identity.name,
+            email: identity.email,
+          });
         }
-        // Restore session after mount (SSR-safe).
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage rehydrate
-        setSession(loaded);
-        setGuestDraft(parsed.guestDraft);
+      } else {
+        setSession(emptySession());
       }
     } catch {
       /* ignore */
     }
     setReady(true);
-  }, []);
+  }, [authReady, identity]);
 
   useEffect(() => {
     if (!ready) return;
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ session, guestDraft }),
-    );
-  }, [session, guestDraft, ready]);
+    localStorage.setItem(GUEST_KEY, JSON.stringify(guestDraft));
+    if (identity) {
+      localStorage.setItem(workspaceKey(identity.id), JSON.stringify(session));
+    }
+  }, [session, guestDraft, ready, identity]);
 
   const registerCreator = useCallback((name: string, email: string) => {
     setSession({
@@ -292,6 +327,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     setSession(emptySession());
   }, []);
+
+  const enterManager = useCallback(() => {
+    if (!identity) return;
+    setSession({
+      role: "manager",
+      displayName: identity.name,
+      email: identity.email,
+      creatorWorkspace: null,
+      businessWorkspace: null,
+    });
+  }, [identity]);
 
   const loadPreset = useCallback((id: DemoPreset) => {
     if (id === "guest") {
@@ -358,7 +404,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<SessionApi>(
     () => ({
       session,
-      ready,
+      ready: ready && authReady,
+      identity,
       guestDraft,
       setGuestDraft,
       registerCreator,
@@ -368,6 +415,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       loginNewCreator: () => loadPreset("creator-new"),
       loginNewBusiness: () => loadPreset("business-new"),
       loginManager: () => loadPreset("manager"),
+      enterManager,
       logout,
       patchCreator,
       patchBusiness,
@@ -376,9 +424,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     [
       session,
       ready,
+      authReady,
+      identity,
       guestDraft,
       registerCreator,
       registerBusiness,
+      enterManager,
       logout,
       patchCreator,
       patchBusiness,

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSession as useAuth } from "next-auth/react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/Button";
 import { ActionCard } from "@/components/ui/ActionCard";
@@ -10,6 +11,8 @@ import { GuestCampaign } from "./GuestCampaign";
 
 export function LandingPage() {
   const [open, setOpen] = useState(false);
+  const auth = useAuth();
+  const signedIn = auth.status === "authenticated";
 
   return (
     <div className="bg-canvas text-ink">
@@ -19,9 +22,15 @@ export function LandingPage() {
           <Link href="/creators" className="text-muted hover:text-ink">
             I&apos;m a creator
           </Link>
-          <Link href="/login" className="text-ink">
-            Log in
-          </Link>
+          {signedIn ? (
+            <Link href="/start" className="text-ink">
+              Workspace
+            </Link>
+          ) : (
+            <Link href="/login" className="text-ink">
+              Log in
+            </Link>
+          )}
         </div>
       </header>
 

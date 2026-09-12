@@ -15,16 +15,10 @@ export default function CreatorsPage() {
         same studio, as a board, not a dashboard.
       </p>
       <Link
-        href="/register/creator"
+        href="/login?intent=creator"
         className="mt-8 inline-flex min-h-14 w-full items-center justify-center rounded-full bg-accent text-base font-medium text-ink"
       >
         Open a studio
-      </Link>
-      <Link
-        href="/work/studio?as=aisha"
-        className="mt-4 text-center text-sm text-muted"
-      >
-        Preview Aisha&apos;s studio
       </Link>
     </div>
   );

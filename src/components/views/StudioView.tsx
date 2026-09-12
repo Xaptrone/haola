@@ -9,6 +9,8 @@ import { MobileAppShell, StudioShell } from "@/components/shells/WorkShells";
 import { ActionCard, type ActionCardModel } from "@/components/ui/ActionCard";
 import { ClarifyChips } from "@/components/ui/ClarifyChips";
 import { ReviewPipeline } from "@/components/review/ReviewPipeline";
+import { NeedWorkspace } from "@/components/auth/NeedWorkspace";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { creatorNav } from "@/lib/nav";
 import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
@@ -22,22 +24,23 @@ export function StudioView() {
   const tab = useSearchParams().get("tab") ?? "home";
   const jobQ = useSearchParams().get("job");
   const as = useSearchParams().get("as");
+  const preview = useSearchParams().get("preview") === "1";
   const ws = session.creatorWorkspace;
   const [flow, setFlow] = useState<"idle" | "market" | "audience" | "done">("idle");
   const [answers, setAnswers] = useState({ market: "", audience: "" });
-  const [deskMode, setDeskMode] = useState<"phone" | "canvas">("phone");
+  const [deskMode, setDeskMode] = useState<"phone" | "canvas">(
+    preview ? "phone" : "canvas",
+  );
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !preview) return;
     if (as === "aisha") loadPreset("creator-active");
     if (as === "new") loadPreset("creator-new");
-  }, [ready, as, loadPreset]);
+  }, [ready, as, preview, loadPreset]);
 
   const myJobs = useMemo(
     () =>
-      market.reviews.filter(
-        (j) => j.creatorName === session.displayName || j.creatorName === "Aisha",
-      ),
+      market.reviews.filter((j) => j.creatorName === session.displayName),
     [market.reviews, session.displayName],
   );
   const waitingMine = myJobs.filter((j) => j.waitingOn === "creator");
@@ -73,30 +76,33 @@ export function StudioView() {
 
   if (!ready) return <div className="min-h-dvh bg-canvas" />;
 
-  if ((as === "aisha" || as === "new") && session.role !== "creator") {
+  if (preview && (as === "aisha" || as === "new") && session.role !== "creator") {
     return <div className="min-h-dvh bg-canvas" />;
   }
 
   if (!ws || session.role !== "creator") {
-    return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="text-muted">Creators land in a studio, not the business workspace.</p>
-        <button
-          type="button"
-          className="min-h-12 rounded-full bg-accent px-5 text-sm font-medium text-ink"
-          onClick={() => loadPreset("creator-new")}
-        >
-          Open a new creator studio
-        </button>
-        <button
-          type="button"
-          className="text-sm text-muted"
-          onClick={() => loadPreset("creator-active")}
-        >
-          Open Aisha&apos;s lived-in studio
-        </button>
-      </div>
-    );
+    if (preview) {
+      return (
+        <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
+          <p className="text-muted">Creators land in a studio, not the business workspace.</p>
+          <button
+            type="button"
+            className="min-h-12 rounded-full bg-accent px-5 text-sm font-medium text-ink"
+            onClick={() => loadPreset("creator-new")}
+          >
+            Open a new creator studio
+          </button>
+          <button
+            type="button"
+            className="text-sm text-muted"
+            onClick={() => loadPreset("creator-active")}
+          >
+            Open Aisha&apos;s lived-in studio
+          </button>
+        </div>
+      );
+    }
+    return <NeedWorkspace kind="creator" />;
   }
 
   const makingContent = ws.canvasIntent === "content" || ws.canvasIntent === "upload";
@@ -249,7 +255,7 @@ export function StudioView() {
                     href: `/work/studio?tab=campaigns&job=${j.id}`,
                   }))}
                 />
-              ) : (
+              ) : preview ? (
                 <ActionCard
                   card={{
                     id: "match",
@@ -264,6 +270,8 @@ export function StudioView() {
                     ],
                   }}
                 />
+              ) : (
+                <p className="text-sm text-muted">No campaigns yet. Matches land here.</p>
               )}
             </div>
           ) : null}
@@ -277,16 +285,19 @@ export function StudioView() {
             />
           ) : null}
           {tab === "profile" ? (
-            <ActionCard
-              card={{
-                id: "pay",
-                kind: "payment",
-                title: `${rm(market.creatorBalance())} pending`,
-                provenance: "verified",
-                body: "Released after final approve. Payout rail is not live yet.",
-                actions: [{ id: "payout", label: "Request payout" }],
-              }}
-            />
+            <div className="space-y-4">
+              <ActionCard
+                card={{
+                  id: "pay",
+                  kind: "payment",
+                  title: `${rm(market.creatorBalance())} pending`,
+                  provenance: "verified",
+                  body: "Released after final approve. Payout rail is not live yet.",
+                  actions: [{ id: "payout", label: "Request payout" }],
+                }}
+              />
+              <SignOutButton />
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -341,11 +352,11 @@ export function StudioView() {
   return (
     <>
       {!desktop ? app : null}
-      {desktop && deskMode === "phone" ? (
+      {desktop && preview && deskMode === "phone" ? (
         <div className="hidden h-dvh flex-col bg-canvas lg:flex">
           <header className="flex items-center justify-between border-b border-line px-8 py-4">
             <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-              How a creator sees it · phone
+              Phone preview
             </p>
             {modeToggle}
           </header>
@@ -354,10 +365,10 @@ export function StudioView() {
           </div>
         </div>
       ) : null}
-      {desktop && deskMode === "canvas" ? (
+      {desktop && (!preview || deskMode === "canvas") ? (
         <StudioShell
           name={ws.name}
-          actions={modeToggle}
+          actions={preview ? modeToggle : undefined}
           composer={
             <p className="text-center text-sm text-muted">
               Composer stays here. Cards land on the canvas — not in a chat drawer.
