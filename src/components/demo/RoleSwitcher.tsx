@@ -23,7 +23,7 @@ export function RoleSwitcher() {
   if (!allowed) return null;
 
   return (
-    <div className="fixed bottom-[calc(84px+var(--safe-bottom))] left-4 z-50 lg:bottom-5">
+    <div className="fixed bottom-[calc(96px+var(--safe-bottom))] left-4 z-50 lg:bottom-5">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

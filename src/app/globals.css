@@ -76,7 +76,11 @@ textarea {
 }
 
 .pb-nav {
-  padding-bottom: calc(72px + var(--safe-bottom));
+  padding-bottom: calc(88px + var(--safe-bottom));
+}
+
+.nav-fab {
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--haola-accent) 42%, transparent);
 }
 
 .pt-safe {
