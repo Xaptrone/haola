@@ -97,6 +97,29 @@ textarea {
   max-width: none;
   border: 0;
   transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.ig-gallery {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+
+.ig-gallery::-webkit-scrollbar {
+  display: none;
+}
+
+.ig-gallery-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .pt-safe {
@@ -118,5 +141,9 @@ button:active:not(:disabled) {
 
   button:active:not(:disabled) {
     transform: none;
+  }
+
+  .ig-gallery {
+    scroll-behavior: auto;
   }
 }

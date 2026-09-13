@@ -91,14 +91,62 @@ export function parseInstagramUrl(raw: string): ParsedInstagram {
   return { kind: "invalid" };
 }
 
-export const DEFAULT_LANDING_INSTAGRAM_URL =
-  "https://www.instagram.com/p/Dc0aQl0zT41/";
+export type InstagramMedia = Extract<ParsedInstagram, { kind: "media" }>;
+
+export const DEFAULT_LANDING_INSTAGRAM_URLS = [
+  "https://www.instagram.com/p/DZuQ6xhz2Au/",
+  "https://www.instagram.com/p/DZ6z5UXT_eA/",
+  "https://www.instagram.com/p/DaBo88XTLbb/",
+  "https://www.instagram.com/p/DaKjxw8TEEZ/",
+  "https://www.instagram.com/p/DUu-gYPEhPD/",
+  "https://www.instagram.com/p/DUPew4eEz_k/",
+];
+
+export function splitInstagramUrlList(raw: string | undefined): string[] {
+  if (!raw?.trim()) return [];
+  return raw
+    .split(/[\s,]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+export function uniqueInstagramMedia(urls: string[]): InstagramMedia[] {
+  const seen = new Set<string>();
+  const media: InstagramMedia[] = [];
+  for (const url of urls) {
+    const parsed = parseInstagramUrl(url);
+    if (parsed.kind !== "media" || seen.has(parsed.shortcode)) continue;
+    seen.add(parsed.shortcode);
+    media.push(parsed);
+  }
+  return media;
+}
+
+export function resolveLandingInstagramMedia(
+  urlsEnv?: string,
+  singleEnv?: string,
+): InstagramMedia[] {
+  const fromList = splitInstagramUrlList(urlsEnv);
+  const raw = fromList.length
+    ? fromList
+    : singleEnv?.trim()
+      ? [singleEnv.trim()]
+      : DEFAULT_LANDING_INSTAGRAM_URLS;
+  const media = uniqueInstagramMedia(raw);
+  return media.length
+    ? media
+    : uniqueInstagramMedia(DEFAULT_LANDING_INSTAGRAM_URLS);
+}
+
+export function landingInstagramMedia(): InstagramMedia[] {
+  return resolveLandingInstagramMedia(
+    process.env.NEXT_PUBLIC_LANDING_INSTAGRAM_URLS,
+    process.env.NEXT_PUBLIC_LANDING_INSTAGRAM_URL,
+  );
+}
 
 export function landingInstagramUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_LANDING_INSTAGRAM_URL?.trim() ||
-    DEFAULT_LANDING_INSTAGRAM_URL
-  );
+  return landingInstagramMedia()[0]?.href ?? DEFAULT_LANDING_INSTAGRAM_URLS[0];
 }
 
 export function landingInstagramCaption(): string {

@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/Button";
 import { ActionCard } from "@/components/ui/ActionCard";
 import {
   landingInstagramCaption,
+  landingInstagramMedia,
   landingInstagramProfileUrl,
-  landingInstagramUrl,
 } from "@/lib/instagram";
 import { GuestCampaign } from "./GuestCampaign";
-import { InstagramFrame } from "./InstagramFrame";
+import { InstagramGallery } from "./InstagramGallery";
 
 export function LandingPage() {
   const [open, setOpen] = useState(false);
@@ -69,8 +69,8 @@ export function LandingPage() {
           </div>
         </div>
         <div className="mx-auto w-full max-w-[280px]">
-          <InstagramFrame
-            url={landingInstagramUrl()}
+          <InstagramGallery
+            urls={landingInstagramMedia().map((item) => item.href)}
             caption={landingInstagramCaption()}
             profileUrl={landingInstagramProfileUrl()}
           />

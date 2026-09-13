@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseInstagramUrl } from "./instagram.ts";
+import {
+  parseInstagramUrl,
+  resolveLandingInstagramMedia,
+  splitInstagramUrlList,
+} from "./instagram.ts";
 
 test("parses a post URL", () => {
   const parsed = parseInstagramUrl("https://www.instagram.com/p/Dc0aQl0zT41/");
@@ -52,4 +56,46 @@ test("rejects reserved paths, other hosts, and empty input", () => {
   assert.equal(parseInstagramUrl("https://www.instagram.com/explore/").kind, "invalid");
   assert.equal(parseInstagramUrl("https://www.youtube.com/watch?v=abc").kind, "invalid");
   assert.equal(parseInstagramUrl("not a url").kind, "invalid");
+});
+
+test("splitInstagramUrlList accepts commas and newlines", () => {
+  assert.deepEqual(
+    splitInstagramUrlList(
+      "https://www.instagram.com/p/DZuQ6xhz2Au/, https://www.instagram.com/p/DZ6z5UXT_eA/",
+    ),
+    [
+      "https://www.instagram.com/p/DZuQ6xhz2Au/",
+      "https://www.instagram.com/p/DZ6z5UXT_eA/",
+    ],
+  );
+  assert.deepEqual(
+    splitInstagramUrlList("https://www.instagram.com/p/DaBo88XTLbb/\nhttps://www.instagram.com/p/DaKjxw8TEEZ/"),
+    [
+      "https://www.instagram.com/p/DaBo88XTLbb/",
+      "https://www.instagram.com/p/DaKjxw8TEEZ/",
+    ],
+  );
+});
+
+test("resolveLandingInstagramMedia keeps order, drops junk and duplicates", () => {
+  const media = resolveLandingInstagramMedia(
+    "https://www.instagram.com/p/DZuQ6xhz2Au/, not-a-url, https://www.instagram.com/p/DZuQ6xhz2Au/, https://www.instagram.com/p/DZ6z5UXT_eA/",
+  );
+  assert.deepEqual(
+    media.map((item) => item.shortcode),
+    ["DZuQ6xhz2Au", "DZ6z5UXT_eA"],
+  );
+});
+
+test("resolveLandingInstagramMedia falls back to the featured set", () => {
+  const media = resolveLandingInstagramMedia("", "");
+  assert.equal(media.length, 6);
+  assert.equal(media[0].shortcode, "DZuQ6xhz2Au");
+  assert.equal(media[5].shortcode, "DUPew4eEz_k");
+});
+
+test("a single URL env still makes a one-reel gallery", () => {
+  const media = resolveLandingInstagramMedia("", "https://www.instagram.com/p/Dc0aQl0zT41/");
+  assert.equal(media.length, 1);
+  assert.equal(media[0].shortcode, "Dc0aQl0zT41");
 });
