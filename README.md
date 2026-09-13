@@ -12,7 +12,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Log in with Google. Surfaces behind `?preview=1` are internal only.
+Open [http://localhost:3000](http://localhost:3000). Create an account with email, or log in with Google / WhatsApp when those are configured. Surfaces behind `?preview=1` are internal only.
 
 Google Cloud: authorized redirect `{origin}/api/auth/callback/google`. Production origin: `https://haola.escor.ai`.
 

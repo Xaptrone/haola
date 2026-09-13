@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import { authenticateEmailUser } from "@/lib/email-auth";
 import {
   clearOtpAttempts,
   cookieValue,
@@ -39,6 +40,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
   providers: [
+    Credentials({
+      id: "email-password",
+      name: "Email",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = String(credentials?.email ?? "");
+        const password = String(credentials?.password ?? "");
+        return authenticateEmailUser(email, password);
+      },
+    }),
     Credentials({
       id: "whatsapp",
       name: "WhatsApp",
