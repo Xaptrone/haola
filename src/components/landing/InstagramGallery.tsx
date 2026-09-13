@@ -53,6 +53,7 @@ function ReelSlide({
             allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             allowFullScreen
             loading={eager ? "eager" : "lazy"}
+            referrerPolicy="origin-when-cross-origin"
             scrolling="no"
             onLoad={() => setReady(true)}
           />
@@ -74,6 +75,7 @@ export function InstagramGallery({
   profileUrl?: string;
 }) {
   const slides = uniqueInstagramMedia(urls);
+  const frameRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [mounted, setMounted] = useState(() => new Set([0, 1]));
@@ -107,20 +109,23 @@ export function InstagramGallery({
   );
 
   useEffect(() => {
+    const frame = frameRef.current;
     const el = scrollerRef.current;
-    if (!el) return;
+    if (!frame || !el) return;
     let startX = 0;
     let startLeft = 0;
     let dragging = false;
     let pointerId: number | null = null;
 
     const down = (e: PointerEvent) => {
-      if ((e.target as HTMLElement).closest("button, a")) return;
+      const target = e.target as HTMLElement;
+      if (target.closest("button, a")) return;
+      if (!target.closest("[data-gallery-rail]")) return;
       startX = e.clientX;
       startLeft = el.scrollLeft;
       dragging = false;
       pointerId = e.pointerId;
-      el.setPointerCapture(e.pointerId);
+      frame.setPointerCapture(e.pointerId);
     };
 
     const move = (e: PointerEvent) => {
@@ -136,21 +141,24 @@ export function InstagramGallery({
       if (pointerId !== e.pointerId) return;
       pointerId = null;
       el.classList.remove("is-dragging");
+      if (frame.hasPointerCapture(e.pointerId)) {
+        frame.releasePointerCapture(e.pointerId);
+      }
       if (!dragging) return;
       const width = el.clientWidth;
       if (!width) return;
       goTo(Math.round(el.scrollLeft / width));
     };
 
-    el.addEventListener("pointerdown", down);
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerup", up);
-    el.addEventListener("pointercancel", up);
+    frame.addEventListener("pointerdown", down);
+    frame.addEventListener("pointermove", move);
+    frame.addEventListener("pointerup", up);
+    frame.addEventListener("pointercancel", up);
     return () => {
-      el.removeEventListener("pointerdown", down);
-      el.removeEventListener("pointermove", move);
-      el.removeEventListener("pointerup", up);
-      el.removeEventListener("pointercancel", up);
+      frame.removeEventListener("pointerdown", down);
+      frame.removeEventListener("pointermove", move);
+      frame.removeEventListener("pointerup", up);
+      frame.removeEventListener("pointercancel", up);
     };
   }, [goTo]);
 
@@ -176,7 +184,10 @@ export function InstagramGallery({
   return (
     <div>
       <div className="relative">
-        <div className="relative rounded-[28px] border border-line bg-elevated p-2">
+        <div
+          ref={frameRef}
+          className="relative rounded-[28px] border border-line bg-elevated p-2"
+        >
           <div
             ref={scrollerRef}
             className="ig-gallery rounded-[20px]"
@@ -199,6 +210,16 @@ export function InstagramGallery({
               <p className="sr-only" aria-live="polite">
                 Reel {index + 1} of {slides.length}
               </p>
+              <div
+                data-gallery-rail
+                aria-hidden
+                className="ig-gallery-rail left-2"
+              />
+              <div
+                data-gallery-rail
+                aria-hidden
+                className="ig-gallery-rail right-2"
+              />
               <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center">
                 <div className="flex rounded-full bg-canvas/55 px-1">
                 {slides.map((slide, i) => (
@@ -224,7 +245,7 @@ export function InstagramGallery({
                 aria-label="Previous reel"
                 disabled={index === 0}
                 onClick={() => goTo(index - 1)}
-                className="absolute top-1/2 left-2 z-10 hidden min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-canvas/70 text-ink transition-[color,transform,opacity] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:text-ink disabled:opacity-30 lg:inline-flex"
+                className="absolute top-1/2 left-2 z-10 inline-flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-canvas/70 text-ink transition-[color,transform,opacity] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:text-ink disabled:opacity-30"
               >
                 <Chevron dir="prev" />
               </button>
@@ -233,7 +254,7 @@ export function InstagramGallery({
                 aria-label="Next reel"
                 disabled={index === slides.length - 1}
                 onClick={() => goTo(index + 1)}
-                className="absolute top-1/2 right-2 z-10 hidden min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-canvas/70 text-ink transition-[color,transform,opacity] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:text-ink disabled:opacity-30 lg:inline-flex"
+                className="absolute top-1/2 right-2 z-10 inline-flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-canvas/70 text-ink transition-[color,transform,opacity] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:text-ink disabled:opacity-30"
               >
                 <Chevron dir="next" />
               </button>

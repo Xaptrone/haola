@@ -99,7 +99,6 @@ textarea {
   max-width: none;
   border: 0;
   transform: translateX(-50%);
-  pointer-events: none;
 }
 
 .ig-gallery {
@@ -113,6 +112,14 @@ textarea {
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+}
+
+.ig-gallery-rail {
+  position: absolute;
+  top: 8px;
+  bottom: 56px;
+  z-index: 8;
+  width: 44px;
   touch-action: none;
   cursor: grab;
 }
