@@ -200,6 +200,7 @@ export function InstagramGallery({
                 Reel {index + 1} of {slides.length}
               </p>
               <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center">
+                <div className="flex rounded-full bg-canvas/55 px-1">
                 {slides.map((slide, i) => (
                   <button
                     key={slide.shortcode}
@@ -216,6 +217,7 @@ export function InstagramGallery({
                     />
                   </button>
                 ))}
+                </div>
               </div>
               <button
                 type="button"
