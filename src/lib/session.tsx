@@ -15,6 +15,7 @@ import type {
   CreatorWorkspace,
   Session,
 } from "./types";
+import { previewPresetFromLocation, type DemoPreset } from "./preview";
 import { ASIAM_BUSINESS_ID, AISHA_CREATOR_ID } from "./review";
 
 const GUEST_KEY = "fxgen.guest.v1";
@@ -213,16 +214,76 @@ type SessionApi = {
   loadPreset: (id: DemoPreset) => void;
 };
 
-export type DemoPreset =
-  | "guest"
-  | "creator-new"
-  | "creator-active"
-  | "business-new"
-  | "business-draft"
-  | "business-ready"
-  | "manager";
+export type { DemoPreset } from "./preview";
 
 const SessionContext = createContext<SessionApi | null>(null);
+
+function sessionFromPreset(id: DemoPreset): {
+  session: Session;
+  guestDraft: CampaignDraft | null;
+} {
+  if (id === "guest") {
+    return { session: emptySession(), guestDraft: null };
+  }
+  if (id === "creator-new") {
+    return {
+      session: {
+        role: "creator",
+        displayName: "Aisha",
+        email: "aisha@studio.my",
+        businessWorkspace: null,
+        creatorWorkspace: newCreatorWorkspace("Aisha"),
+      },
+      guestDraft: null,
+    };
+  }
+  if (id === "creator-active") {
+    return { session: activeCreator(), guestDraft: null };
+  }
+  if (id === "business-new") {
+    return {
+      session: {
+        role: "business",
+        displayName: "Shoant",
+        email: "owner@asiam.my",
+        creatorWorkspace: null,
+        businessWorkspace: newBusinessWorkspace("As I Am by Chef Ton", null),
+      },
+      guestDraft: null,
+    };
+  }
+  if (id === "business-draft") {
+    const draft: CampaignDraft = {
+      id: "draft-guest",
+      businessName: "As I Am by Chef Ton",
+      goal: "Bookings",
+      story: "Tasting menu for first-time visitors",
+    };
+    return {
+      session: {
+        role: "business",
+        displayName: "Shoant",
+        email: "owner@asiam.my",
+        creatorWorkspace: null,
+        businessWorkspace: newBusinessWorkspace("As I Am by Chef Ton", draft),
+      },
+      guestDraft: draft,
+    };
+  }
+  if (id === "business-ready") {
+    return { session: readyBusiness(), guestDraft: null };
+  }
+  return {
+    session: {
+      role: "manager",
+      displayName: "Nadia",
+      email: "nadia@fxgen.my",
+      creatorWorkspace: null,
+      businessWorkspace: null,
+    },
+    guestDraft: null,
+  };
+}
 
 export function SessionProvider({
   children,
@@ -238,14 +299,22 @@ export function SessionProvider({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!authReady) return;
+    const preset = previewPresetFromLocation(
+      window.location.pathname,
+      window.location.search,
+    );
+    if (!authReady && !preset) return;
     try {
       const guestRaw = localStorage.getItem(GUEST_KEY);
       if (guestRaw) {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- guest draft rehydrate
         setGuestDraft(JSON.parse(guestRaw) as CampaignDraft);
       }
-      if (identity) {
+      if (preset) {
+        const next = sessionFromPreset(preset);
+        setSession(next.session);
+        setGuestDraft(next.guestDraft);
+      } else if (identity) {
         const raw = localStorage.getItem(workspaceKey(identity.id));
         if (raw) {
           const parsed = JSON.parse(raw) as Session;
@@ -340,71 +409,15 @@ export function SessionProvider({
   }, [identity]);
 
   const loadPreset = useCallback((id: DemoPreset) => {
-    if (id === "guest") {
-      setGuestDraft(null);
-      setSession(emptySession());
-      return;
-    }
-    if (id === "creator-new") {
-      setSession({
-        role: "creator",
-        displayName: "Aisha",
-        email: "aisha@studio.my",
-        businessWorkspace: null,
-        creatorWorkspace: newCreatorWorkspace("Aisha"),
-      });
-      return;
-    }
-    if (id === "creator-active") {
-      setSession(activeCreator());
-      return;
-    }
-    if (id === "business-new") {
-      setGuestDraft(null);
-      setSession({
-        role: "business",
-        displayName: "Shoant",
-        email: "owner@asiam.my",
-        creatorWorkspace: null,
-        businessWorkspace: newBusinessWorkspace("As I Am by Chef Ton", null),
-      });
-      return;
-    }
-    if (id === "business-draft") {
-      const draft: CampaignDraft = {
-        id: "draft-guest",
-        businessName: "As I Am by Chef Ton",
-        goal: "Bookings",
-        story: "Tasting menu for first-time visitors",
-      };
-      setGuestDraft(draft);
-      setSession({
-        role: "business",
-        displayName: "Shoant",
-        email: "owner@asiam.my",
-        creatorWorkspace: null,
-        businessWorkspace: newBusinessWorkspace("As I Am by Chef Ton", draft),
-      });
-      return;
-    }
-    if (id === "business-ready") {
-      setGuestDraft(null);
-      setSession(readyBusiness());
-      return;
-    }
-    setSession({
-      role: "manager",
-      displayName: "Nadia",
-      email: "nadia@fxgen.my",
-      creatorWorkspace: null,
-      businessWorkspace: null,
-    });
+    const next = sessionFromPreset(id);
+    setGuestDraft(next.guestDraft);
+    setSession(next.session);
   }, []);
 
   const value = useMemo<SessionApi>(
     () => ({
       session,
-      ready: ready && authReady,
+      ready,
       identity,
       guestDraft,
       setGuestDraft,
@@ -424,7 +437,6 @@ export function SessionProvider({
     [
       session,
       ready,
-      authReady,
       identity,
       guestDraft,
       registerCreator,

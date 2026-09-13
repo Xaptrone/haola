@@ -74,10 +74,22 @@ export function StudioView() {
     [answers],
   );
 
-  if (!ready) return <div className="min-h-dvh bg-canvas" />;
+  if (!ready) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-canvas">
+        <p className="text-sm text-muted">
+          {preview ? "Opening preview" : ""}
+        </p>
+      </div>
+    );
+  }
 
   if (preview && (as === "aisha" || as === "new") && session.role !== "creator") {
-    return <div className="min-h-dvh bg-canvas" />;
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-canvas">
+        <p className="text-sm text-muted">Opening preview</p>
+      </div>
+    );
   }
 
   if (!ws || session.role !== "creator") {
