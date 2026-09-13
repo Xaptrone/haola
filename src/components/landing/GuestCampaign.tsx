@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ActionCard, type ActionCardModel } from "@/components/ui/ActionCard";
 import { Button } from "@/components/ui/Button";
 import { ClarifyChips } from "@/components/ui/ClarifyChips";
-import { SAMPLE_BRANDS } from "@/lib/review";
+import { PickOrCreateBusiness } from "@/components/ui/PickOrCreateBusiness";
 import { useSession } from "@/lib/session";
 
 type Step = 0 | 1 | 2;
@@ -82,14 +82,26 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
         </div>
 
         {step === 0 ? (
-          <ClarifyChips
-            question="Which business is this campaign for?"
-            options={[...SAMPLE_BRANDS, "I'll type it later"]}
-            onPick={(v) => {
-              setBusiness(v === "I'll type it later" ? "To confirm" : v);
-              setStep(1);
-            }}
-          />
+          <div className="space-y-3">
+            <PickOrCreateBusiness
+              question="What's the business called?"
+              existing={[]}
+              onPick={(name) => {
+                setBusiness(name);
+                setStep(1);
+              }}
+            />
+            <button
+              type="button"
+              className="min-h-11 text-sm text-muted hover:text-ink"
+              onClick={() => {
+                setBusiness("To confirm");
+                setStep(1);
+              }}
+            >
+              I&apos;ll type it later
+            </button>
+          </div>
         ) : null}
 
         {step === 1 ? (

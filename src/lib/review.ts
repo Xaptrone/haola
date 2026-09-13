@@ -31,12 +31,6 @@ export const PIPELINE_STEPS: {
 export const AISHA_CREATOR_ID = "cws-aisha";
 export const ASIAM_BUSINESS_ID = "bws-asiam";
 
-export const SAMPLE_BRANDS = [
-  "As I Am by Chef Ton",
-  "Klinik Harmoni",
-  "Atelier Atas",
-] as const;
-
 export function newReviewJob(input: {
   title: string;
   kind: ReviewJob["kind"];
