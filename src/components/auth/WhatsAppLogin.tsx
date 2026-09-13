@@ -122,7 +122,11 @@ export function WhatsAppLogin({
           </form>
           <div className="mt-8">
             <p className="mb-3 text-center text-[13px] text-muted">or</p>
-            <GoogleButton variant="ghost" callbackUrl={callbackUrl} />
+            <GoogleButton
+              variant="ghost"
+              callbackUrl={callbackUrl}
+              disabled={!googleConfigured}
+            />
             {!googleConfigured ? (
               <p className="mt-3 text-center text-sm text-muted">
                 Google sign-in is not connected on this server yet.

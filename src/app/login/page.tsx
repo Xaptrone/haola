@@ -38,8 +38,8 @@ export default async function LoginPage({
         Log in
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted">
-        WhatsApp is the fastest way in. Google works too if you already use it
-        for work.
+        New business or creator? Sign in, then choose your workspace. No
+        separate register form.
       </p>
       {errorCopy ? (
         <p className="mt-4 text-sm text-rose">{errorCopy}</p>

@@ -7,16 +7,19 @@ export function GoogleButton({
   callbackUrl,
   label = "Continue with Google",
   variant = "primary",
+  disabled = false,
 }: {
   callbackUrl: string;
   label?: string;
   variant?: "primary" | "ghost" | "quiet";
+  disabled?: boolean;
 }) {
   return (
     <Button
       type="button"
       variant={variant}
       className="min-h-14 w-full gap-3"
+      disabled={disabled}
       onClick={() => signIn("google", { callbackUrl })}
     >
       <GoogleMark />
