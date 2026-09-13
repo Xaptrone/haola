@@ -64,7 +64,7 @@ export function PickOrCreateBusiness({
               onChange={(e) => setName(e.target.value)}
               autoComplete="organization"
               placeholder="Business name"
-              className="min-h-14 w-full rounded-[14px] border border-line bg-surface px-4 outline-none placeholder:text-muted"
+              className="min-h-14 w-full rounded-[14px] border border-line bg-surface px-4 text-ink outline-none placeholder:text-muted"
             />
           </label>
           <Button type="submit" className="min-h-14 w-full" disabled={!name.trim()}>

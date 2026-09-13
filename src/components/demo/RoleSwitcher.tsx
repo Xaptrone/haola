@@ -8,7 +8,7 @@ const presets: { id: DemoPreset; label: string; href: string }[] = [
   { id: "guest", label: "Landing", href: "/?preview=1" },
   { id: "creator-new", label: "Creator · new", href: "/work/studio?as=new&preview=1" },
   { id: "creator-active", label: "Creator · Aisha", href: "/work/studio?as=aisha&preview=1" },
-  { id: "business-new", label: "Business · first login", href: "/work/business?preview=1" },
+  { id: "business-new", label: "Business · first login", href: "/work/business?preview=1&as=new" },
   { id: "business-draft", label: "Business · from landing", href: "/work/business?preview=1" },
   { id: "business-ready", label: "Business · ready", href: "/work/business?preview=1" },
   { id: "manager", label: "Manager", href: "/oversight/manager?preview=1" },

@@ -84,6 +84,7 @@ export function BusinessView() {
   }
 
   const needsSetup = ws.onboardingStage !== "ready" && !ws.guestDraft;
+  const askingGoal = step === "goal" || (needsSetup && ws.onboardingStage === "goal");
   const showDraft = Boolean(ws.guestDraft) && step !== "business";
   const isOwner = (ws.seat ?? "owner") === "owner";
   const brandOptions = (ws.brands ?? []).map((b) => b.name);
@@ -174,7 +175,7 @@ export function BusinessView() {
 
   const body = (
     <>
-      {needsSetup && step !== "goal" ? (
+      {needsSetup && !askingGoal ? (
         <PickOrCreateBusiness
           question={
             brandOptions.length
@@ -185,7 +186,7 @@ export function BusinessView() {
           onPick={commitBusiness}
         />
       ) : null}
-      {step === "goal" ? (
+      {askingGoal ? (
         <ClarifyChips
           question="What should we do first?"
           options={["Drive bookings", "Launch an offer", "A promotion", "Awareness"]}
