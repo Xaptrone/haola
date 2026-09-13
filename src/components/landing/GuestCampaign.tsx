@@ -1,14 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ActionCard, type ActionCardModel } from "@/components/ui/ActionCard";
 import { Button } from "@/components/ui/Button";
 import { ClarifyChips } from "@/components/ui/ClarifyChips";
 import { PickOrCreateBusiness } from "@/components/ui/PickOrCreateBusiness";
+import { CampaignStoryboard } from "@/components/landing/CampaignStoryboard";
+import { KolMatchReel } from "@/components/landing/KolMatchReel";
+import {
+  campaignTreatment,
+  displayBrandName,
+} from "@/lib/campaign-treatment";
 import { useSession } from "@/lib/session";
 
-type Step = 0 | 1 | 2;
+type Step = 0 | 1 | 2 | 3;
 
 export function GuestCampaign({ onClose }: { onClose: () => void }) {
   const { setGuestDraft } = useSession();
@@ -17,66 +22,32 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
   const [business, setBusiness] = useState("");
   const [goal, setGoal] = useState("");
 
-  const cards: ActionCardModel[] = useMemo(
-    () => [
-      {
-        id: "brief",
-        kind: "brief",
-        title: "Campaign brief",
-        provenance: "ai",
-        rows: [
-          { label: "Business", value: business, provenance: "user" },
-          { label: "Goal", value: goal, provenance: "user" },
-          { label: "Angle", value: "First-visit story, not a shouty promo", provenance: "ai" },
-        ],
-        actions: [
-          { id: "accept", label: "Accept" },
-          { id: "edit", label: "Edit", variant: "ghost" },
-          { id: "regen", label: "Regenerate", variant: "quiet" },
-        ],
-      },
-      {
-        id: "kol",
-        kind: "kol",
-        title: "Recommended KOL · Mei Lin",
-        provenance: "predicted",
-        score: { value: 91, label: "Match to this brief" },
-        factors: [
-          { label: "Market", value: "KL / Penang" },
-          { label: "Tone", value: "Premium, not shouty" },
-          { label: "Language", value: "EN + 中文" },
-        ],
-        actions: [
-          { id: "accept", label: "Accept" },
-          { id: "compare", label: "Compare", variant: "ghost" },
-        ],
-      },
-    ],
-    [business, goal],
-  );
+  const brand = displayBrandName(business);
+  const treatment = campaignTreatment(business, goal);
+  const wide = step >= 2;
 
   function continueSignup() {
     setGuestDraft({
       id: "draft-guest",
       businessName: business,
       goal,
+      story: treatment.hook,
     });
     router.push("/login?intent=business");
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-canvas/80 lg:items-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-canvas/90 lg:items-center">
       <div
-        className="flex max-h-[92dvh] w-full max-w-[430px] flex-col overflow-auto rounded-t-[24px] border border-line bg-canvas p-6 lg:rounded-[24px]"
-        style={{
-          transition: `transform var(--duration-sheet) var(--ease-drawer)`,
-        }}
+        className={`flex max-h-[92dvh] w-full flex-col overflow-auto rounded-t-[24px] border border-line bg-canvas p-6 lg:rounded-[24px] ${
+          wide ? "max-w-[680px]" : "max-w-[430px]"
+        }`}
       >
         <div className="mb-6 flex items-center justify-between">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-            Campaign builder
+            {step === 3 ? "Match" : "Campaign"}
           </p>
-          <button type="button" onClick={onClose} className="text-sm text-muted">
+          <button type="button" onClick={onClose} className="min-h-11 text-sm text-muted">
             Close
           </button>
         </div>
@@ -116,18 +87,41 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
         ) : null}
 
         {step === 2 ? (
-          <div className="space-y-4">
-            <p className="text-[17px] font-medium text-ink">
-              A first brief. Nothing here is verified until you confirm the brand.
+          <div className="space-y-6">
+            <p className="max-w-[16ch] text-[32px] font-semibold leading-[1.08] tracking-[-0.04em] text-ink">
+              {treatment.hook}
             </p>
-            {cards.map((card) => (
-              <ActionCard key={card.id} card={card} />
-            ))}
+            <CampaignStoryboard brand={brand} treatment={treatment} />
+            <Button className="min-h-14 w-full" onClick={() => setStep(3)}>
+              See the match
+            </Button>
+            <button
+              type="button"
+              className="min-h-11 w-full text-sm text-muted hover:text-ink"
+              onClick={() => setStep(1)}
+            >
+              Edit
+            </button>
+          </div>
+        ) : null}
+
+        {step === 3 ? (
+          <div className="space-y-6">
+            <KolMatchReel />
+            <div className="text-center">
+              <p className="font-mono text-[28px] tabular-nums text-ink">91</p>
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                Predicted match
+              </p>
+              <p className="mt-3 text-sm leading-6 text-muted">
+                Premium, not shouty. Same market as {brand}.
+              </p>
+            </div>
             <Button className="min-h-14 w-full" onClick={continueSignup}>
               Continue with this draft
             </Button>
             <p className="text-center text-xs text-muted">
-              Log in to keep this draft in your workspace.
+              Log in to keep this draft.
             </p>
           </div>
         ) : null}
