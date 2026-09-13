@@ -95,16 +95,18 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
               <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
                 AI suggestion · 9:16
               </p>
-              <Button className="min-h-14 w-full lg:w-auto" onClick={() => setStep(3)}>
-                See the match
-              </Button>
-              <button
-                type="button"
-                className="min-h-11 text-sm text-muted hover:text-ink"
-                onClick={() => setStep(1)}
-              >
-                Edit
-              </button>
+              <div className="flex flex-col items-start gap-3">
+                <Button className="min-h-14 px-7" onClick={() => setStep(3)}>
+                  See the match
+                </Button>
+                <button
+                  type="button"
+                  className="min-h-11 text-sm text-muted hover:text-ink"
+                  onClick={() => setStep(1)}
+                >
+                  Edit
+                </button>
+              </div>
             </div>
             <div className="order-1 lg:order-2">
               <CampaignStoryboard brand={brand} treatment={treatment} />
@@ -127,10 +129,12 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
                   Premium, not shouty. Same market as {brand}.
                 </p>
               </div>
-              <Button className="min-h-14 w-full lg:w-auto" onClick={continueSignup}>
-                Continue with this draft
-              </Button>
-              <p className="text-xs text-muted">Log in to keep this draft.</p>
+              <div className="flex flex-col items-start gap-3">
+                <Button className="min-h-14 px-7" onClick={continueSignup}>
+                  Continue with this draft
+                </Button>
+                <p className="text-xs text-muted">Log in to keep this draft.</p>
+              </div>
             </div>
           </div>
         ) : null}
