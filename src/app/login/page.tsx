@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { WhatsAppLogin } from "@/components/auth/WhatsAppLogin";
-import { PreviewMenu } from "@/components/demo/RoleSwitcher";
 import { auth, googleAuthConfigured } from "@/auth";
 import { whatsappAuthConfigured } from "@/lib/whatsapp-otp";
 import { redirect } from "next/navigation";
@@ -53,7 +52,9 @@ export default async function LoginPage({
         />
       </div>
       <div className="mt-8 flex flex-col items-center gap-3">
-        <PreviewMenu always />
+        <Link href="/preview" className="text-center text-sm text-muted">
+          Preview
+        </Link>
         <Link href="/" className="text-center text-sm text-muted">
           Back
         </Link>

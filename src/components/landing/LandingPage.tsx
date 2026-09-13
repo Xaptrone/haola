@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { VerticalVideo } from "@/components/ui/VerticalVideo";
 import { GuestCampaign } from "./GuestCampaign";
-import { PreviewMenu } from "@/components/demo/RoleSwitcher";
 
 export function LandingPage() {
   const [open, setOpen] = useState(false);
@@ -23,9 +22,9 @@ export function LandingPage() {
           <Link href="/creators" className="text-muted hover:text-ink">
             I&apos;m a creator
           </Link>
-          <div className="hidden lg:block">
-            <PreviewMenu always />
-          </div>
+          <Link href="/preview" className="text-muted hover:text-ink">
+            Preview
+          </Link>
           {signedIn ? (
             <Link href="/start" className="text-ink">
               Workspace
@@ -54,6 +53,14 @@ export function LandingPage() {
             <Button className="min-h-14 px-7 text-base" onClick={() => setOpen(true)}>
               Start a campaign
             </Button>
+            <div>
+              <Link
+                href="/preview"
+                className="mt-4 inline-flex min-h-11 items-center text-sm text-muted hover:text-ink"
+              >
+                Preview
+              </Link>
+            </div>
           </div>
         </div>
         <div className="mx-auto w-full max-w-[280px]">
@@ -108,7 +115,12 @@ export function LandingPage() {
         <Button className="min-h-14 w-full" onClick={() => setOpen(true)}>
           Start a campaign
         </Button>
-        <PreviewMenu always placement="up" tone="quiet" />
+        <Link
+          href="/preview"
+          className="flex min-h-11 w-full items-center justify-center text-sm text-muted"
+        >
+          Preview
+        </Link>
       </div>
 
       {open ? <GuestCampaign onClose={() => setOpen(false)} /> : null}
