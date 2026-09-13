@@ -85,15 +85,17 @@ textarea {
 
 /* Crop Instagram embed chrome (header / likes) inside the 9:16 phone. */
 .ig-reel {
+  position: relative;
+  overflow: hidden;
   aspect-ratio: 9 / 16;
 }
 
 .ig-reel-embed {
   position: absolute;
   left: 50%;
-  top: -11%;
-  width: 170%;
-  height: 128%;
+  top: -12%;
+  width: 180%;
+  height: 132%;
   max-width: none;
   border: 0;
   transform: translateX(-50%);
@@ -102,6 +104,8 @@ textarea {
 
 .ig-gallery {
   display: flex;
+  width: 100%;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
@@ -117,7 +121,11 @@ textarea {
 }
 
 .ig-gallery-slide {
+  position: relative;
   flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+  overflow: hidden;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }

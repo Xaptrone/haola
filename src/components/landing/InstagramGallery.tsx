@@ -128,7 +128,7 @@ export function InstagramGallery({
   return (
     <div>
       <div className="relative">
-        <div className="rounded-[28px] border border-line bg-elevated p-2">
+        <div className="relative rounded-[28px] border border-line bg-elevated p-2">
           <div
             ref={scrollerRef}
             className="ig-gallery rounded-[20px]"
@@ -146,55 +146,51 @@ export function InstagramGallery({
               />
             ))}
           </div>
-        </div>
-        {many ? (
-          <>
-            <button
-              type="button"
-              aria-label="Previous reel"
-              disabled={index === 0}
-              onClick={() => goTo(index - 1)}
-              className="absolute top-1/2 left-0 hidden min-h-11 min-w-11 -translate-x-[calc(100%+8px)] -translate-y-1/2 items-center justify-center rounded-full text-muted transition-[color,transform] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:text-ink disabled:opacity-30 lg:inline-flex"
-            >
-              <Chevron dir="prev" />
-            </button>
-            <button
-              type="button"
-              aria-label="Next reel"
-              disabled={index === slides.length - 1}
-              onClick={() => goTo(index + 1)}
-              className="absolute top-1/2 right-0 hidden min-h-11 min-w-11 translate-x-[calc(100%+8px)] -translate-y-1/2 items-center justify-center rounded-full text-muted transition-[color,transform] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:text-ink disabled:opacity-30 lg:inline-flex"
-            >
-              <Chevron dir="next" />
-            </button>
-          </>
-        ) : null}
-      </div>
-      {many ? (
-        <>
-          <p className="sr-only" aria-live="polite">
-            Reel {index + 1} of {slides.length}
-          </p>
-          <div className="mt-3 flex justify-center gap-1">
-            {slides.map((slide, i) => (
+          {many ? (
+            <>
+              <p className="sr-only" aria-live="polite">
+                Reel {index + 1} of {slides.length}
+              </p>
+              <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center">
+                {slides.map((slide, i) => (
+                  <button
+                    key={slide.shortcode}
+                    type="button"
+                    aria-label={`Reel ${i + 1} of ${slides.length}`}
+                    aria-current={i === index ? "true" : undefined}
+                    onClick={() => goTo(i)}
+                    className="pointer-events-auto flex min-h-11 min-w-8 items-center justify-center"
+                  >
+                    <span
+                      className={`block h-2 w-2 rounded-full bg-ink transition-opacity duration-[var(--duration-ui)] ease-[var(--ease-out)] ${
+                        i === index ? "opacity-100" : "opacity-40"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
               <button
-                key={slide.shortcode}
                 type="button"
-                aria-label={`Reel ${i + 1} of ${slides.length}`}
-                aria-current={i === index ? "true" : undefined}
-                onClick={() => goTo(i)}
-                className="flex min-h-11 min-w-11 items-center justify-center"
+                aria-label="Previous reel"
+                disabled={index === 0}
+                onClick={() => goTo(index - 1)}
+                className="absolute top-1/2 left-2 z-10 hidden min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-canvas/70 text-ink transition-[color,transform,opacity] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:text-ink disabled:opacity-30 lg:inline-flex"
               >
-                <span
-                  className={`block h-1.5 w-1.5 rounded-full bg-ink transition-opacity duration-[var(--duration-ui)] ease-[var(--ease-out)] ${
-                    i === index ? "opacity-100" : "opacity-30"
-                  }`}
-                />
+                <Chevron dir="prev" />
               </button>
-            ))}
-          </div>
-        </>
-      ) : null}
+              <button
+                type="button"
+                aria-label="Next reel"
+                disabled={index === slides.length - 1}
+                onClick={() => goTo(index + 1)}
+                className="absolute top-1/2 right-2 z-10 hidden min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-canvas/70 text-ink transition-[color,transform,opacity] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:text-ink disabled:opacity-30 lg:inline-flex"
+              >
+                <Chevron dir="next" />
+              </button>
+            </>
+          ) : null}
+        </div>
+      </div>
       {caption ? <p className="mt-3 text-sm text-muted">{caption}</p> : null}
       {current ? (
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 text-sm">
