@@ -6,8 +6,13 @@ import { useSession as useAuth } from "next-auth/react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/Button";
 import { ActionCard } from "@/components/ui/ActionCard";
-import { VerticalVideo } from "@/components/ui/VerticalVideo";
+import {
+  landingInstagramCaption,
+  landingInstagramProfileUrl,
+  landingInstagramUrl,
+} from "@/lib/instagram";
 import { GuestCampaign } from "./GuestCampaign";
+import { InstagramFrame } from "./InstagramFrame";
 
 export function LandingPage() {
   const [open, setOpen] = useState(false);
@@ -64,9 +69,11 @@ export function LandingPage() {
           </div>
         </div>
         <div className="mx-auto w-full max-w-[280px]">
-          <div className="rounded-[28px] border border-line bg-elevated p-2">
-            <VerticalVideo caption="Mei Lin · tasting menu, As I Am" />
-          </div>
+          <InstagramFrame
+            url={landingInstagramUrl()}
+            caption={landingInstagramCaption()}
+            profileUrl={landingInstagramProfileUrl()}
+          />
         </div>
       </section>
 

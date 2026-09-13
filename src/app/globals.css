@@ -83,6 +83,22 @@ textarea {
   box-shadow: 0 8px 18px color-mix(in srgb, var(--haola-accent) 42%, transparent);
 }
 
+/* Crop Instagram embed chrome (header / likes) inside the 9:16 phone. */
+.ig-reel {
+  aspect-ratio: 9 / 16;
+}
+
+.ig-reel-embed {
+  position: absolute;
+  left: 50%;
+  top: -11%;
+  width: 170%;
+  height: 128%;
+  max-width: none;
+  border: 0;
+  transform: translateX(-50%);
+}
+
 .pt-safe {
   padding-top: max(12px, var(--safe-top));
 }
