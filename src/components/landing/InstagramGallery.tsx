@@ -106,6 +106,54 @@ export function InstagramGallery({
     [slides.length],
   );
 
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    let startX = 0;
+    let startLeft = 0;
+    let dragging = false;
+    let pointerId: number | null = null;
+
+    const down = (e: PointerEvent) => {
+      if ((e.target as HTMLElement).closest("button, a")) return;
+      startX = e.clientX;
+      startLeft = el.scrollLeft;
+      dragging = false;
+      pointerId = e.pointerId;
+      el.setPointerCapture(e.pointerId);
+    };
+
+    const move = (e: PointerEvent) => {
+      if (pointerId !== e.pointerId) return;
+      const dx = e.clientX - startX;
+      if (!dragging && Math.abs(dx) < 10) return;
+      dragging = true;
+      el.classList.add("is-dragging");
+      el.scrollLeft = startLeft - dx;
+    };
+
+    const up = (e: PointerEvent) => {
+      if (pointerId !== e.pointerId) return;
+      pointerId = null;
+      el.classList.remove("is-dragging");
+      if (!dragging) return;
+      const width = el.clientWidth;
+      if (!width) return;
+      goTo(Math.round(el.scrollLeft / width));
+    };
+
+    el.addEventListener("pointerdown", down);
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerup", up);
+    el.addEventListener("pointercancel", up);
+    return () => {
+      el.removeEventListener("pointerdown", down);
+      el.removeEventListener("pointermove", move);
+      el.removeEventListener("pointerup", up);
+      el.removeEventListener("pointercancel", up);
+    };
+  }, [goTo]);
+
   const onScroll = () => {
     const el = scrollerRef.current;
     if (!el || !el.clientWidth) return;

@@ -42,7 +42,7 @@ export function LandingPage() {
         </div>
       </header>
 
-      <section className="mx-auto grid min-h-[calc(100dvh-64px)] max-w-6xl items-center gap-12 px-5 pb-36 pt-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-10 lg:pb-16">
+      <section className="mx-auto grid min-h-[calc(100dvh-64px)] max-w-6xl items-start gap-12 px-5 pb-36 pt-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-10 lg:pb-16">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
             For businesses

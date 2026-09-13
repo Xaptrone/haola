@@ -113,7 +113,14 @@ textarea {
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  touch-action: pan-x;
+  touch-action: none;
+  cursor: grab;
+}
+
+.ig-gallery.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
 }
 
 .ig-gallery::-webkit-scrollbar {
