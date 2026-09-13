@@ -24,7 +24,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
 
   const brand = displayBrandName(business);
   const treatment = campaignTreatment(business, goal);
-  const wide = step >= 2;
+  const board = step >= 2;
 
   function continueSignup() {
     setGuestDraft({
@@ -40,7 +40,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-canvas/90 lg:items-center">
       <div
         className={`flex max-h-[92dvh] w-full flex-col overflow-auto rounded-t-[24px] border border-line bg-canvas p-6 lg:rounded-[24px] ${
-          wide ? "max-w-[680px]" : "max-w-[430px]"
+          board ? "max-w-[720px]" : "max-w-[430px]"
         }`}
       >
         <div className="mb-6 flex items-center justify-between">
@@ -87,42 +87,51 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
         ) : null}
 
         {step === 2 ? (
-          <div className="space-y-6">
-            <p className="max-w-[16ch] text-[32px] font-semibold leading-[1.08] tracking-[-0.04em] text-ink">
-              {treatment.hook}
-            </p>
-            <CampaignStoryboard brand={brand} treatment={treatment} />
-            <Button className="min-h-14 w-full" onClick={() => setStep(3)}>
-              See the match
-            </Button>
-            <button
-              type="button"
-              className="min-h-11 w-full text-sm text-muted hover:text-ink"
-              onClick={() => setStep(1)}
-            >
-              Edit
-            </button>
+          <div className="grid items-center gap-8 lg:grid-cols-[1fr_240px]">
+            <div className="order-2 space-y-6 lg:order-1">
+              <p className="max-w-[12ch] text-[36px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink lg:text-[44px]">
+                {treatment.hook}
+              </p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                AI suggestion · 9:16
+              </p>
+              <Button className="min-h-14 w-full lg:w-auto" onClick={() => setStep(3)}>
+                See the match
+              </Button>
+              <button
+                type="button"
+                className="min-h-11 text-sm text-muted hover:text-ink"
+                onClick={() => setStep(1)}
+              >
+                Edit
+              </button>
+            </div>
+            <div className="order-1 lg:order-2">
+              <CampaignStoryboard brand={brand} treatment={treatment} />
+            </div>
           </div>
         ) : null}
 
         {step === 3 ? (
-          <div className="space-y-6">
+          <div className="grid items-center gap-8 lg:grid-cols-[240px_1fr]">
             <KolMatchReel />
-            <div className="text-center">
-              <p className="font-mono text-[28px] tabular-nums text-ink">91</p>
-              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                Predicted match
-              </p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Premium, not shouty. Same market as {brand}.
-              </p>
+            <div className="space-y-6">
+              <div>
+                <p className="text-[32px] font-semibold tracking-[-0.04em] text-ink">
+                  Mei Lin
+                </p>
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                  Predicted 91
+                </p>
+                <p className="mt-4 max-w-[24ch] text-[15px] leading-6 text-muted">
+                  Premium, not shouty. Same market as {brand}.
+                </p>
+              </div>
+              <Button className="min-h-14 w-full lg:w-auto" onClick={continueSignup}>
+                Continue with this draft
+              </Button>
+              <p className="text-xs text-muted">Log in to keep this draft.</p>
             </div>
-            <Button className="min-h-14 w-full" onClick={continueSignup}>
-              Continue with this draft
-            </Button>
-            <p className="text-center text-xs text-muted">
-              Log in to keep this draft.
-            </p>
           </div>
         ) : null}
       </div>

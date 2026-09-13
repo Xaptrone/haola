@@ -1,17 +1,41 @@
+"use client";
+
+import { useState } from "react";
+import { landingInstagramMedia } from "@/lib/instagram";
+
 export function KolMatchReel() {
-  return (
-    <figure className="mx-auto w-full max-w-[220px] overflow-hidden rounded-[20px] border border-line bg-elevated">
-      <div className="relative" style={{ aspectRatio: "9 / 16" }}>
-        <div className="absolute inset-0 bg-canvas" />
-        <div className="absolute left-1/2 top-[18%] h-[22%] w-[42%] -translate-x-1/2 rounded-full bg-surface" />
-        <div className="absolute inset-x-[18%] top-[42%] h-[38%] rounded-t-[80px] bg-surface" />
-        <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="text-[20px] font-semibold tracking-[-0.03em] text-ink">
+  const slide = landingInstagramMedia()[0];
+  const [ready, setReady] = useState(false);
+
+  if (!slide) {
+    return (
+      <figure className="relative mx-auto w-full max-w-[240px] overflow-hidden rounded-[20px] border border-line bg-canvas">
+        <div className="relative" style={{ aspectRatio: "9 / 16" }}>
+          <p className="absolute inset-x-4 top-[34%] text-center text-[40px] font-semibold tracking-[-0.05em] text-ink">
+            ML
+          </p>
+          <p className="absolute inset-x-4 bottom-5 text-center text-[15px] text-ink">
             Mei Lin
           </p>
-          <p className="mt-1 text-sm text-muted">KL / Penang · EN + 中文</p>
         </div>
-      </div>
+      </figure>
+    );
+  }
+
+  return (
+    <figure className="ig-reel mx-auto w-full max-w-[240px] overflow-hidden rounded-[20px] border border-line bg-canvas">
+      {!ready ? <div className="absolute inset-0 bg-canvas" aria-hidden /> : null}
+      <iframe
+        src={slide.embedSrc}
+        title="Mei Lin"
+        className="ig-reel-embed"
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        allowFullScreen
+        loading="eager"
+        referrerPolicy="origin-when-cross-origin"
+        scrolling="no"
+        onLoad={() => setReady(true)}
+      />
     </figure>
   );
 }
