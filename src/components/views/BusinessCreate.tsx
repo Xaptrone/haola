@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { ClarifyChips } from "@/components/ui/ClarifyChips";
+import { PickOrCreateBusiness } from "@/components/ui/PickOrCreateBusiness";
 import { PRICE } from "@/lib/credits";
 import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
+import { upsertBrand } from "@/lib/brands";
 import { newReviewJob } from "@/lib/review";
 import { useSession } from "@/lib/session";
 import type { CreateIntent, ReviewJob } from "@/lib/types";
@@ -234,11 +236,19 @@ export function BusinessCreate({
       ) : null}
 
       {createStep === "business" ? (
-        <ClarifyChips
-          question="Which business are we promoting?"
-          options={brandOptions}
+        <PickOrCreateBusiness
+          question={
+            brandOptions.length
+              ? "Which business are we promoting?"
+              : "What's the business called?"
+          }
+          existing={brandOptions}
           onPick={(v) => {
             setCampaignBusiness(v);
+            patchBusiness({
+              name: v,
+              brands: upsertBrand(session.businessWorkspace?.brands, v),
+            });
             if (createIntent === "brand-ip") setCreateStep("ip-tone");
             else if (createIntent === "content-pack") setCreateStep("pack-size");
             else setCreateStep("goal");

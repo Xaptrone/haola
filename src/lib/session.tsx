@@ -65,11 +65,9 @@ function newCreatorWorkspace(name: string): CreatorWorkspace {
   };
 }
 
-function newBusinessWorkspace(
-  name: string,
-  guestDraft: CampaignDraft | null,
-): BusinessWorkspace {
+function newBusinessWorkspace(guestDraft: CampaignDraft | null): BusinessWorkspace {
   const stage = guestDraft ? "ready" : "welcome";
+  const name = guestDraft?.businessName || "My business";
   return {
     kind: "business",
     id: uid("bws"),
@@ -247,7 +245,7 @@ function sessionFromPreset(id: DemoPreset): {
         displayName: "Shoant",
         email: "owner@asiam.my",
         creatorWorkspace: null,
-        businessWorkspace: newBusinessWorkspace("As I Am by Chef Ton", null),
+        businessWorkspace: newBusinessWorkspace(null),
       },
       guestDraft: null,
     };
@@ -265,7 +263,7 @@ function sessionFromPreset(id: DemoPreset): {
         displayName: "Shoant",
         email: "owner@asiam.my",
         creatorWorkspace: null,
-        businessWorkspace: newBusinessWorkspace("As I Am by Chef Ton", draft),
+        businessWorkspace: newBusinessWorkspace(draft),
       },
       guestDraft: draft,
     };
@@ -371,7 +369,7 @@ export function SessionProvider({
         displayName: name,
         email,
         creatorWorkspace: null,
-        businessWorkspace: newBusinessWorkspace(name, guestDraft),
+        businessWorkspace: newBusinessWorkspace(guestDraft),
       });
     },
     [guestDraft],

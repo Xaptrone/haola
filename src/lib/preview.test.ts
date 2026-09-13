@@ -9,6 +9,10 @@ test("preview routes boot a demo workspace without login", () => {
     "business-ready",
   );
   assert.equal(
+    previewPresetFromLocation("/work/business", "preview=1&as=new"),
+    "business-new",
+  );
+  assert.equal(
     previewPresetFromLocation("/work/studio", "as=aisha&preview=1"),
     "creator-active",
   );

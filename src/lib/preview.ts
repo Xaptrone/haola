@@ -23,6 +23,9 @@ export function previewPresetFromLocation(
   if (pathname.startsWith("/work/studio")) {
     return params.get("as") === "new" ? "creator-new" : "creator-active";
   }
+  if (pathname.startsWith("/work/business") && params.get("as") === "new") {
+    return "business-new";
+  }
   if (pathname.startsWith("/work") || pathname === "/preview") {
     return "business-ready";
   }

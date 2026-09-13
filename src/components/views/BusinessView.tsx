@@ -9,14 +9,15 @@ import { CommandShell, MobileAppShell } from "@/components/shells/WorkShells";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { ClarifyChips } from "@/components/ui/ClarifyChips";
 import { PRICE, businessWallet } from "@/lib/credits";
-import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
 import { businessNav } from "@/lib/nav";
-import { newReviewJob, SAMPLE_BRANDS } from "@/lib/review";
+import { upsertBrand } from "@/lib/brands";
+import { newReviewJob } from "@/lib/review";
 import { useSession } from "@/lib/session";
 import type { BusinessSeat, ReviewJob } from "@/lib/types";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { NeedWorkspace } from "@/components/auth/NeedWorkspace";
+import { PickOrCreateBusiness } from "@/components/ui/PickOrCreateBusiness";
 import { BusinessCreate } from "./BusinessCreate";
 
 export function BusinessView() {
@@ -52,7 +53,13 @@ export function BusinessView() {
 
   useEffect(() => {
     if (!ready || !preview) return;
-    if (session.role !== "business") loadPreset("business-ready");
+    if (session.role !== "business") {
+      loadPreset(
+        new URLSearchParams(window.location.search).get("as") === "new"
+          ? "business-new"
+          : "business-ready",
+      );
+    }
   }, [ready, preview, session.role, loadPreset]);
 
   if (!ready) {
@@ -79,9 +86,18 @@ export function BusinessView() {
   const needsSetup = ws.onboardingStage !== "ready" && !ws.guestDraft;
   const showDraft = Boolean(ws.guestDraft) && step !== "business";
   const isOwner = (ws.seat ?? "owner") === "owner";
-  const brandOptions = ws.brands?.length
-    ? ws.brands.map((b) => b.name)
-    : [...SAMPLE_BRANDS];
+  const brandOptions = (ws.brands ?? []).map((b) => b.name);
+
+  function commitBusiness(name: string) {
+    if (!ws) return;
+    patchBusiness({
+      name,
+      onboardingStage: "goal",
+      brands: upsertBrand(ws.brands, name),
+    });
+    market.ensureParty({ id: ws.id, name, kind: "business" });
+    setStep("goal");
+  }
 
   function holdJobs(list: ReviewJob[]) {
     if (!ws) return false;
@@ -158,26 +174,15 @@ export function BusinessView() {
 
   const body = (
     <>
-      {needsSetup && step === "idle" ? (
-        <ClarifyChips
-          question="Which business is this workspace for?"
-          options={[...SAMPLE_BRANDS]}
-          onPick={(v) => {
-            patchBusiness({
-              name: v,
-              onboardingStage: "goal",
-              brands: [
-                {
-                  id: uid("brd"),
-                  name: v,
-                  city: "Malaysia",
-                  outlets: "To confirm",
-                },
-              ],
-            });
-            market.ensureParty({ id: ws.id, name: v, kind: "business" });
-            setStep("goal");
-          }}
+      {needsSetup && step !== "goal" ? (
+        <PickOrCreateBusiness
+          question={
+            brandOptions.length
+              ? "Which business is this workspace for?"
+              : "What's the business called?"
+          }
+          existing={brandOptions}
+          onPick={commitBusiness}
         />
       ) : null}
       {step === "goal" ? (
@@ -355,7 +360,7 @@ export function BusinessView() {
                 <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
                   Brands
                 </p>
-                <ul className="space-y-2">
+                <ul className="mb-4 space-y-2">
                   {ws.brands?.map((b) => (
                     <li
                       key={b.id}
@@ -368,6 +373,18 @@ export function BusinessView() {
                     </li>
                   ))}
                 </ul>
+                <PickOrCreateBusiness
+                  question={ws.brands?.length ? "Add another business" : "Add a business"}
+                  existing={[]}
+                  submitLabel="Add"
+                  onPick={(name) => {
+                    patchBusiness({
+                      name: ws.brands?.length ? ws.name : name,
+                      brands: upsertBrand(ws.brands, name),
+                    });
+                    market.ensureParty({ id: ws.id, name, kind: "business" });
+                  }}
+                />
               </div>
               <div>
                 <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">

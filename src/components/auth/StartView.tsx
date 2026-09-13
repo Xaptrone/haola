@@ -63,10 +63,7 @@ export function StartView() {
               : "border border-line bg-elevated text-ink"
           }`}
           onClick={() => {
-            registerBusiness(
-              identity.id.startsWith("wa:") ? "My business" : name,
-              email,
-            );
+            registerBusiness(name, email);
             router.push("/work/business");
           }}
         >
