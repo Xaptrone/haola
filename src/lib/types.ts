@@ -76,6 +76,36 @@ export type ReviewJob = {
   priceCredits: number;
 };
 
+export type BrandIpMediaKind = "video" | "image";
+
+export type BrandIpMedia = {
+  id: string;
+  kind: BrandIpMediaKind;
+  src: string;
+  caption: string;
+};
+
+export type BrandIpLine = {
+  id: string;
+  label: string;
+  credits: number;
+};
+
+/** Commercial package a business confirms. Admin-editable. */
+export type BrandIpOffer = {
+  headline: string;
+  promise: string;
+  included: string[];
+  extraInfo: string;
+  ownership: string;
+  afterConfirm: string;
+  turnaround: string;
+  creatorName: string;
+  kolName: string;
+  lines: BrandIpLine[];
+  media: BrandIpMedia[];
+};
+
 export type BrandIpJob = {
   id: string;
   businessId: string;
@@ -89,6 +119,7 @@ export type BrandIpJob = {
   status: "draft" | "confirmed" | "handed_off";
   creatorName: string;
   kolName: string;
+  offer: BrandIpOffer;
 };
 
 export type SpendRequest = {

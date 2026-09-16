@@ -62,7 +62,7 @@ export default function CreatorPerformancePage() {
   const selected = CREATORS.find((c) => c.id === selectedId) ?? null;
 
   return (
-    <OversightShell title={selected ? selected.name : "Creator performance"}>
+    <OversightShell title={selected ? selected.name : "Creator performance"} active="creator">
       {!selected ? (
         <>
           <p className="text-sm text-muted">

@@ -25,8 +25,14 @@ import {
   ASIAM_BUSINESS_ID,
   seedReviews,
 } from "@/lib/review";
+import {
+  defaultBrandIpOffer,
+  normalizeIpJob,
+  normalizeOffer,
+} from "@/lib/brand-ip";
 import type {
   BrandIpJob,
+  BrandIpOffer,
   LedgerEntry,
   MarketplaceParty,
   ReviewJob,
@@ -39,10 +45,23 @@ const CREATOR_ID = AISHA_CREATOR_ID;
 type MarketplaceState = {
   reviews: ReviewJob[];
   ipJobs: BrandIpJob[];
+  brandIpOffer: BrandIpOffer;
   spendRequests: SpendRequest[];
   ledger: LedgerEntry[];
   parties: MarketplaceParty[];
 };
+
+function hydrateState(raw: Partial<MarketplaceState>): MarketplaceState {
+  const seed = seedState();
+  return {
+    reviews: raw.reviews ?? seed.reviews,
+    ipJobs: (raw.ipJobs ?? []).map((job) => normalizeIpJob(job)),
+    brandIpOffer: normalizeOffer(raw.brandIpOffer),
+    spendRequests: raw.spendRequests ?? [],
+    ledger: raw.ledger ?? seed.ledger,
+    parties: raw.parties ?? seed.parties,
+  };
+}
 
 function seedState(): MarketplaceState {
   const reviews = seedReviews();
@@ -62,6 +81,7 @@ function seedState(): MarketplaceState {
   return {
     reviews,
     ipJobs: [],
+    brandIpOffer: defaultBrandIpOffer(),
     spendRequests: [],
     ledger,
     parties: [
@@ -78,13 +98,17 @@ type MarketplaceApi = {
   ready: boolean;
   reviews: ReviewJob[];
   ipJobs: BrandIpJob[];
+  brandIpOffer: BrandIpOffer;
   spendRequests: SpendRequest[];
   ledger: LedgerEntry[];
   parties: MarketplaceParty[];
   upsertReview: (job: ReviewJob) => void;
   patchReview: (id: string, next: ReviewJob) => void;
   addIpJob: (job: BrandIpJob) => void;
+  upsertIpJob: (job: BrandIpJob) => void;
   patchIpJob: (id: string, patch: Partial<BrandIpJob>) => void;
+  removeIpJob: (id: string) => void;
+  setBrandIpOffer: (offer: BrandIpOffer) => void;
   addSpendRequest: (req: SpendRequest) => void;
   removeSpendRequest: (id: string) => void;
   ensureParty: (party: MarketplaceParty) => void;
@@ -117,13 +141,7 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
         if (parsed.reviews && parsed.ledger) {
           // Restore persisted ledger/jobs after mount (SSR-safe).
           // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage rehydrate
-          setState({
-            reviews: parsed.reviews,
-            ipJobs: parsed.ipJobs ?? [],
-            spendRequests: parsed.spendRequests ?? [],
-            ledger: parsed.ledger,
-            parties: parsed.parties ?? seedState().parties,
-          });
+          setState(hydrateState(parsed));
         }
       }
     } catch {
@@ -152,14 +170,35 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const addIpJob = useCallback((job: BrandIpJob) => {
-    setState((s) => ({ ...s, ipJobs: [job, ...s.ipJobs] }));
+    setState((s) => ({ ...s, ipJobs: [normalizeIpJob(job), ...s.ipJobs] }));
+  }, []);
+
+  const upsertIpJob = useCallback((job: BrandIpJob) => {
+    const next = normalizeIpJob(job);
+    setState((s) => ({
+      ...s,
+      ipJobs: [next, ...s.ipJobs.filter((j) => j.id !== next.id)],
+    }));
   }, []);
 
   const patchIpJob = useCallback((id: string, patch: Partial<BrandIpJob>) => {
     setState((s) => ({
       ...s,
-      ipJobs: s.ipJobs.map((j) => (j.id === id ? { ...j, ...patch } : j)),
+      ipJobs: s.ipJobs.map((j) =>
+        j.id === id ? normalizeIpJob({ ...j, ...patch }) : j,
+      ),
     }));
+  }, []);
+
+  const removeIpJob = useCallback((id: string) => {
+    setState((s) => ({
+      ...s,
+      ipJobs: s.ipJobs.filter((j) => j.id !== id),
+    }));
+  }, []);
+
+  const setBrandIpOffer = useCallback((offer: BrandIpOffer) => {
+    setState((s) => ({ ...s, brandIpOffer: normalizeOffer(offer) }));
   }, []);
 
   const addSpendRequest = useCallback((req: SpendRequest) => {
@@ -264,13 +303,17 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
       ready,
       reviews: state.reviews,
       ipJobs: state.ipJobs,
+      brandIpOffer: state.brandIpOffer,
       spendRequests: state.spendRequests,
       ledger: state.ledger,
       parties: state.parties,
       upsertReview,
       patchReview,
       addIpJob,
+      upsertIpJob,
       patchIpJob,
+      removeIpJob,
+      setBrandIpOffer,
       addSpendRequest,
       removeSpendRequest,
       ensureParty,
@@ -291,7 +334,10 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
       upsertReview,
       patchReview,
       addIpJob,
+      upsertIpJob,
       patchIpJob,
+      removeIpJob,
+      setBrandIpOffer,
       addSpendRequest,
       removeSpendRequest,
       ensureParty,

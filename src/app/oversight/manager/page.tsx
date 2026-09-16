@@ -6,17 +6,19 @@ import { Suspense } from "react";
 import { AdminTopup, LedgerList } from "@/components/credits/LedgerPanel";
 import { OversightShell } from "@/components/shells/OversightShell";
 import { StaffGate } from "@/components/auth/StaffGate";
+import { BrandIpAdmin } from "@/components/brand-ip/BrandIpAdmin";
 import { useMarketplace } from "@/lib/marketplace";
 
 function ManagerHome() {
   const tab = useSearchParams().get("tab") ?? "queue";
-  const { reviews, ledger } = useMarketplace();
+  const { reviews, ledger, ipJobs } = useMarketplace();
   const open = reviews.filter((j) => j.waitingOn !== "done");
   const escalated = reviews.filter((j) => j.waitingOn === "admin");
+  const ipDrafts = ipJobs.filter((j) => j.status === "draft" || j.status === "confirmed");
 
   if (tab === "credits") {
     return (
-      <OversightShell title="Credits">
+      <OversightShell title="Credits" active="credits">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,360px)_1fr]">
           <AdminTopup />
           <div>
@@ -30,11 +32,19 @@ function ManagerHome() {
     );
   }
 
+  if (tab === "brand-ip") {
+    return (
+      <OversightShell title="Brand IP" active="brand-ip">
+        <BrandIpAdmin />
+      </OversightShell>
+    );
+  }
+
   return (
-    <OversightShell title="Queue">
+    <OversightShell title="Queue" active="queue">
       <div className="grid gap-4 lg:grid-cols-3">
         <Metric href="/work/review" label="Needs review" value={String(open.length)} />
-        <Metric href="/oversight/manager?tab=credits" label="Credits" value="Ledger" />
+        <Metric href="/oversight/manager?tab=brand-ip" label="Brand IP" value={String(ipDrafts.length)} />
         <Metric href="/work/review" label="Escalated" value={String(escalated.length)} />
       </div>
       <ul className="mt-8 space-y-3">

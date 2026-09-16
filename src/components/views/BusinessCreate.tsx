@@ -1,17 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { ClarifyChips } from "@/components/ui/ClarifyChips";
 import { PickOrCreateBusiness } from "@/components/ui/PickOrCreateBusiness";
+import { BrandIpOfferView } from "@/components/brand-ip/BrandIpOfferView";
+import {
+  DEFAULT_IP_TONE,
+  draftIpId,
+  ipCopy,
+  offerHold,
+} from "@/lib/brand-ip";
 import { PRICE } from "@/lib/credits";
 import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
 import { upsertBrand } from "@/lib/brands";
 import { newReviewJob } from "@/lib/review";
 import { useSession } from "@/lib/session";
-import type { CreateIntent, ReviewJob } from "@/lib/types";
+import type { BrandIpJob, CreateIntent, ReviewJob } from "@/lib/types";
 
 type CreateStep =
   | "intent"
@@ -44,40 +51,6 @@ function parseStep(raw: string | null): CreateStep {
   }
 }
 
-function ipCopy(tone: string) {
-  if (tone.includes("Bold")) {
-    return {
-      look: "High contrast, short cuts, one colour pop",
-      tone: "Bold and playful. Still never shouty.",
-      dos: "Name the brand once. End on a clear next step.",
-      donts: "No fake urgency. No invented reviews.",
-      sampleLines: [
-        "This is the room. Then the offer. Then you.",
-        "Come once. You’ll know if it’s yours.",
-      ],
-    };
-  }
-  if (tone.includes("Calm")) {
-    return {
-      look: "Slow holds, natural light, quiet type",
-      tone: "Calm expert. Trust first.",
-      dos: "Show the space. One proof. One booking path.",
-      donts: "No medical or legal claims. No before/after.",
-      sampleLines: ["We keep it simple. You decide.", "Book when you’re ready."],
-    };
-  }
-  return {
-    look: "Warm light, precise framing, one hero object",
-    tone: "Warm and precise. Never shouty.",
-    dos: "Name the brand once. Paid partnership line.",
-    donts: "No secret recipes. No invented prices.",
-    sampleLines: [
-      "Not loud. Just the thing, as it is.",
-      "Come through — we’ll be here.",
-    ],
-  };
-}
-
 export function BusinessCreate({
   workspaceId,
   workspaceName,
@@ -106,6 +79,54 @@ export function BusinessCreate({
   const [ipTone, setIpTone] = useState("");
   const [packSize, setPackSize] = useState(3);
   const [creditError, setCreditError] = useState<string | null>(null);
+  const [editingBrief, setEditingBrief] = useState(false);
+
+  const draftId = draftIpId(workspaceId);
+  const ipDraft = market.ipJobs.find((job) => job.id === draftId) ?? null;
+  const ipOffer = ipDraft?.offer ?? market.brandIpOffer;
+
+  useEffect(() => {
+    if (!market.ready) return;
+    if (createIntent !== "brand-ip" || createStep !== "ip-draft") return;
+    const existing = market.ipJobs.find((job) => job.id === draftId);
+    if (existing && existing.status !== "draft") return;
+    const tone = ipTone || existing?.brief || DEFAULT_IP_TONE;
+    const brand = campaignBusiness || workspaceName;
+    if (
+      existing &&
+      existing.brief === tone &&
+      existing.businessName === brand
+    ) {
+      return;
+    }
+    const copy = ipCopy(tone);
+    const toneChanged = Boolean(existing && existing.brief !== tone);
+    market.upsertIpJob({
+      id: draftId,
+      businessId: workspaceId,
+      businessName: brand,
+      brief: tone,
+      look: !existing || toneChanged ? copy.look : existing.look,
+      tone: !existing || toneChanged ? copy.tone : existing.tone,
+      dos: !existing || toneChanged ? copy.dos : existing.dos,
+      donts: !existing || toneChanged ? copy.donts : existing.donts,
+      sampleLines:
+        !existing || toneChanged ? copy.sampleLines : existing.sampleLines,
+      status: "draft",
+      creatorName: existing?.creatorName ?? market.brandIpOffer.creatorName,
+      kolName: existing?.kolName ?? market.brandIpOffer.kolName,
+      offer: existing?.offer ?? market.brandIpOffer,
+    });
+  }, [
+    market,
+    createIntent,
+    createStep,
+    ipTone,
+    campaignBusiness,
+    workspaceId,
+    workspaceName,
+    draftId,
+  ]);
 
   function queueSpend(kind: CreateIntent, title: string, amount: number) {
     market.addSpendRequest({
@@ -161,41 +182,45 @@ export function BusinessCreate({
   }
 
   function finishIp() {
-    const copy = ipCopy(ipTone);
-    const ipId = uid("ip");
-    const pack = {
-      id: ipId,
+    const copy = ipCopy(ipTone || ipDraft?.brief || DEFAULT_IP_TONE);
+    const offer = ipDraft?.offer ?? market.brandIpOffer;
+    const hold = offerHold(offer);
+    const pack: BrandIpJob = {
+      id: uid("ip"),
       businessId: workspaceId,
       businessName: campaignBusiness || workspaceName,
-      brief: ipTone,
-      look: copy.look,
-      tone: copy.tone,
-      dos: copy.dos,
-      donts: copy.donts,
-      sampleLines: copy.sampleLines,
-      creatorName: "Aisha",
-      kolName: "Mei Lin",
+      brief: ipTone || ipDraft?.brief || DEFAULT_IP_TONE,
+      look: ipDraft?.look ?? copy.look,
+      tone: ipDraft?.tone ?? copy.tone,
+      dos: ipDraft?.dos ?? copy.dos,
+      donts: ipDraft?.donts ?? copy.donts,
+      sampleLines: ipDraft?.sampleLines ?? copy.sampleLines,
+      creatorName: offer.creatorName,
+      kolName: offer.kolName,
+      offer,
+      status: "handed_off",
     };
     const job = newReviewJob({
-      title: `Brand IP · ${campaignBusiness || workspaceName}`,
+      title: `Brand IP · ${pack.businessName}`,
       kind: "brand-ip",
       businessId: workspaceId,
-      businessName: campaignBusiness || workspaceName,
-      priceCredits: PRICE.brandIp,
-      script: `Locked brief: ${copy.tone} ${copy.dos} Sample: ${copy.sampleLines[0]}`,
+      businessName: pack.businessName,
+      priceCredits: hold,
+      script: `Locked brief: ${pack.tone} ${pack.dos} Sample: ${pack.sampleLines[0]}`,
       notes: [
-        { name: "Look", note: copy.look },
-        { name: "Do", note: copy.dos },
-        { name: "Don’t", note: copy.donts },
+        { name: "Look", note: pack.look },
+        { name: "Do", note: pack.dos },
+        { name: "Don’t", note: pack.donts },
       ],
     });
     if (!isOwner) {
-      market.addIpJob({ ...pack, status: "confirmed" });
+      market.upsertIpJob({ ...pack, id: draftId, status: "confirmed" });
       queueSpend("brand-ip", job.title, job.priceCredits);
       return;
     }
     if (!holdJobs([job])) return;
-    market.addIpJob({ ...pack, status: "handed_off" });
+    market.removeIpJob(draftId);
+    market.addIpJob(pack);
     router.push("/work/business?tab=content");
   }
 
@@ -216,6 +241,8 @@ export function BusinessCreate({
       `${campaignBusiness} · ${packSize} assets`,
     );
   }
+
+  const fallbackCopy = ipCopy(ipTone || DEFAULT_IP_TONE);
 
   return (
     <div className="space-y-4">
@@ -337,35 +364,50 @@ export function BusinessCreate({
       ) : null}
 
       {createIntent === "brand-ip" && createStep === "ip-draft" ? (
-        <ActionCard
-          card={{
-            id: "ip",
-            kind: "ip",
-            title: "Draft IP pack",
-            provenance: "ai",
-            body: "Business owns this brief once confirmed. Creator executes. Not published.",
-            rows: [
-              { label: "Look", value: ipCopy(ipTone).look, provenance: "ai" },
-              { label: "Tone", value: ipCopy(ipTone).tone, provenance: "ai" },
-              { label: "Do", value: ipCopy(ipTone).dos, provenance: "ai" },
-              { label: "Don’t", value: ipCopy(ipTone).donts, provenance: "ai" },
-              { label: "Sample", value: ipCopy(ipTone).sampleLines[0], provenance: "ai" },
-              { label: "Hold", value: rm(PRICE.brandIp), provenance: "verified" },
-            ],
-            score: { value: 78, label: "Avatar Market-Fit" },
-            actions: [
-              {
-                id: "accept",
-                label: isOwner ? "Confirm and send to creator" : "Submit to owner",
-              },
-              { id: "edit", label: "Edit", variant: "ghost" },
-            ],
-          }}
-          onAction={(id) => {
-            if (id === "accept") finishIp();
-            if (id === "edit") setCreateStep("ip-tone");
-          }}
-        />
+        <div className="space-y-3">
+          <p className="text-[17px] font-medium leading-6 text-ink">
+            This is the pack. Confirm the hold to send it to the creator.
+          </p>
+          <BrandIpOfferView
+            brandName={campaignBusiness || workspaceName}
+            offer={ipOffer}
+            job={{
+              look: ipDraft?.look ?? fallbackCopy.look,
+              tone: ipDraft?.tone ?? fallbackCopy.tone,
+              dos: ipDraft?.dos ?? fallbackCopy.dos,
+              donts: ipDraft?.donts ?? fallbackCopy.donts,
+              sampleLines: ipDraft?.sampleLines ?? fallbackCopy.sampleLines,
+            }}
+            confirmLabel={
+              isOwner ? "Confirm and send to creator" : "Submit to owner"
+            }
+            balance={isOwner ? market.businessBalance(workspaceId) : undefined}
+            editing={editingBrief}
+            onConfirm={finishIp}
+            onEdit={() => setEditingBrief(true)}
+            onCancelEdit={() => setEditingBrief(false)}
+            onSaveBrief={(next) => {
+              market.patchIpJob(draftId, {
+                look: next.look,
+                tone: next.tone,
+                dos: next.dos,
+                donts: next.donts,
+                sampleLines: [next.sample],
+              });
+              setEditingBrief(false);
+            }}
+          />
+          <button
+            type="button"
+            className="text-sm text-muted hover:text-ink"
+            onClick={() => {
+              setEditingBrief(false);
+              setCreateStep("ip-tone");
+            }}
+          >
+            Change personality
+          </button>
+        </div>
       ) : null}
 
       {createIntent === "content-pack" && createStep === "pack-size" ? (

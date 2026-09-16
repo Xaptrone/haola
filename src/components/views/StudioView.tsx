@@ -253,7 +253,14 @@ export function StudioView() {
                     title: `Locked brief · ${lockedIp.businessName}`,
                     provenance: "verified",
                     body: "Business owns this IP brief. Produce against it — do not publish as final.",
-                    rows: [{ label: "Tone", value: lockedIp.tone }],
+                    rows: [
+                      { label: "Tone", value: lockedIp.tone },
+                      { label: "Look", value: lockedIp.look },
+                      {
+                        label: "Pack",
+                        value: (lockedIp.offer?.included ?? []).slice(0, 2).join(" · "),
+                      },
+                    ],
                     actions: [],
                   }}
                 />

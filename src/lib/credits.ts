@@ -10,6 +10,7 @@ export const CREATOR_SHARE = 0.7;
 
 export const PRICE = {
   campaign: 800,
+  /** Keep in sync with BRAND_IP_HOLD in brand-ip.ts */
   brandIp: 1200,
   packAsset: 400,
 } as const;
