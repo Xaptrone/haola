@@ -128,6 +128,11 @@ export function BusinessCreate({
     draftId,
   ]);
 
+  function workHref(tab: string) {
+    const preview = params.get("preview") === "1" ? "&preview=1" : "";
+    return `/work/business?tab=${tab}${preview}`;
+  }
+
   function queueSpend(kind: CreateIntent, title: string, amount: number) {
     market.addSpendRequest({
       id: uid("spd"),
@@ -139,7 +144,7 @@ export function BusinessCreate({
       goal: campaignGoal || ipTone || `${packSize} assets`,
       assetCount: kind === "content-pack" ? packSize : undefined,
     });
-    router.push("/work/business?tab=home");
+    router.push(workHref("home"));
   }
 
   function holdJobs(list: ReviewJob[]) {
@@ -165,7 +170,7 @@ export function BusinessCreate({
       return;
     }
     if (!holdJobs(list)) return;
-    router.push("/work/business?tab=content");
+    router.push(workHref("content"));
   }
 
   function finishCampaign() {
@@ -221,7 +226,7 @@ export function BusinessCreate({
     if (!holdJobs([job])) return;
     market.removeIpJob(draftId);
     market.addIpJob(pack);
-    router.push("/work/business?tab=content");
+    router.push(workHref("content"));
   }
 
   function finishPack() {

@@ -20,25 +20,6 @@ export function draftIpId(businessId: string): string {
   return `ip-draft:${businessId}`;
 }
 
-function stillSvg(title: string, line: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900">
-    <rect width="720" height="900" fill="#12110F"/>
-    <rect x="28" y="28" width="664" height="844" rx="36" fill="#1E1C18"/>
-    <rect x="28" y="28" width="8" height="844" fill="#6F43F6"/>
-    <text x="80" y="120" fill="#9A948A" font-family="Sora, ui-sans-serif, sans-serif" font-size="22" letter-spacing="4">${escapeXml(title.toUpperCase())}</text>
-    <text x="80" y="460" fill="#F4F0EA" font-family="Sora, ui-sans-serif, sans-serif" font-size="36">${escapeXml(line)}</text>
-  </svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-function escapeXml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
 export function ipCopy(tone: string) {
   if (tone.includes("Bold")) {
     return {
@@ -115,14 +96,14 @@ export function defaultBrandIpOffer(): BrandIpOffer {
       {
         id: "img-look",
         kind: "image",
-        src: stillSvg("Look", "High contrast. One colour pop."),
-        caption: "Look still",
+        src: "fxgen:still",
+        caption: "Look · One colour pop",
       },
       {
         id: "img-stills",
         kind: "image",
-        src: stillSvg("Still pack", "Hero · space · close"),
-        caption: "Still pack",
+        src: "fxgen:still",
+        caption: "Still pack · Hero, space, close",
       },
     ],
   };
@@ -208,6 +189,7 @@ export function mediaKindFromSrc(src: string): BrandIpMediaKind {
   if (!trimmed) return "video";
   if (/instagram\.com\/(?:p|reel|reels|tv)\//i.test(trimmed)) return "video";
   if (
+    trimmed.startsWith("fxgen:still") ||
     trimmed.startsWith("data:image") ||
     /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(trimmed)
   ) {

@@ -36,7 +36,7 @@ test("mediaKindFromSrc classifies Instagram, images, and files", () => {
     "video",
   );
   assert.equal(mediaKindFromSrc("https://cdn.example.com/look.jpg"), "image");
-  assert.equal(mediaKindFromSrc("data:image/png;base64,xx"), "image");
+  assert.equal(mediaKindFromSrc("fxgen:still"), "image");
   assert.equal(mediaKindFromSrc("https://cdn.example.com/cut.mp4"), "video");
 });
 
