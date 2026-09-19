@@ -27,6 +27,8 @@ export function EmailLogin({
   const [error, setError] = useState<string | null>(null);
 
   const otherMethods = googleConfigured || whatsappConfigured;
+  const creatorIntent = callbackUrl.includes("intent=creator");
+  const businessIntent = callbackUrl.includes("intent=business");
 
   async function loginWithEmail() {
     const result = await signIn("email-password", {
@@ -82,7 +84,11 @@ export function EmailLogin({
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted">
         {mode === "register"
-          ? "Use email. Then choose whether you are a business or a creator."
+          ? creatorIntent
+            ? "Use email. Your studio opens next."
+            : businessIntent
+              ? "Use email. Your business workspace opens next."
+              : "Use email. Then choose whether you are a business or a creator."
           : "Use the email you registered with."}
       </p>
       <form onSubmit={onSubmit} className="mt-8 space-y-3">
