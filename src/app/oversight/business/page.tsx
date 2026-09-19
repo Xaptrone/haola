@@ -2,7 +2,7 @@ import { OversightShell } from "@/components/shells/OversightShell";
 
 export default function BusinessPerformancePage() {
   return (
-    <OversightShell title="Business performance">
+      <OversightShell title="Business performance" active="business">
       <p className="text-sm text-muted">
         Oversight only. Work happens in the workspace, not here.
       </p>

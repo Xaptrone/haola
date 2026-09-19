@@ -18,6 +18,7 @@ import type { BusinessSeat, ReviewJob } from "@/lib/types";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { NeedWorkspace } from "@/components/auth/NeedWorkspace";
 import { PickOrCreateBusiness } from "@/components/ui/PickOrCreateBusiness";
+import { offerHold } from "@/lib/brand-ip";
 import { BusinessCreate } from "./BusinessCreate";
 
 export function BusinessView() {
@@ -42,6 +43,9 @@ export function BusinessView() {
   const spendMine = ws
     ? market.spendRequests.filter((s) => s.businessId === ws.id)
     : [];
+  const ipDraft = ws
+    ? market.ipJobs.find((j) => j.businessId === ws.id && j.status === "draft")
+    : null;
   const selected = jobs.find((j) => j.id === jobQ) ?? null;
   const ledgerMine = ws
     ? market.ledger.filter(
@@ -132,15 +136,22 @@ export function BusinessView() {
       });
       if (!holdJobs([job])) return;
     } else if (req.kind === "brand-ip") {
+      const ip = market.ipJobs.find(
+        (j) => j.businessId === ws.id && j.status === "confirmed",
+      );
+      const amount = ip ? offerHold(ip.offer) : req.amount;
       const job = newReviewJob({
         title: req.title,
         kind: "brand-ip",
         businessId: ws.id,
         businessName: req.businessName,
-        priceCredits: req.amount,
-        script: `Locked IP brief for ${req.businessName}.`,
+        priceCredits: amount,
+        script: ip
+          ? `Locked IP brief for ${req.businessName}. ${ip.tone}`
+          : `Locked IP brief for ${req.businessName}.`,
       });
       if (!holdJobs([job])) return;
+      if (ip) market.patchIpJob(ip.id, { status: "handed_off" });
     } else if (req.kind === "content-pack") {
       const n = req.assetCount ?? 3;
       const list = Array.from({ length: n }, (_, i) =>
@@ -255,6 +266,25 @@ export function BusinessView() {
             <p className="text-sm text-muted">
               Marketing can submit briefs. The owner approves spend.
             </p>
+          ) : null}
+
+          {tab === "home" && ipDraft ? (
+            <ActionCard
+              card={{
+                id: ipDraft.id,
+                kind: "ip",
+                title: "Brand IP pack ready to confirm",
+                provenance: "manager",
+                body: `${ipDraft.businessName}. ${rm(offerHold(ipDraft.offer))} hold. See samples, what you get, then confirm.`,
+                actions: [{ id: "review", label: "Review pack" }],
+              }}
+              onAction={() => {
+                const brand = encodeURIComponent(ipDraft.businessName);
+                router.push(
+                  `/work/business?tab=create&intent=brand-ip&step=ip-draft&brand=${brand}`,
+                );
+              }}
+            />
           ) : null}
 
           {tab === "home" && isOwner && spendMine.length ? (

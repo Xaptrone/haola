@@ -11,7 +11,17 @@ const presets: { id: DemoPreset; label: string; href: string }[] = [
   { id: "business-new", label: "Business · first login", href: "/work/business?preview=1&as=new" },
   { id: "business-draft", label: "Business · from landing", href: "/work/business?preview=1" },
   { id: "business-ready", label: "Business · ready", href: "/work/business?preview=1" },
+  {
+    id: "business-ready",
+    label: "Business · Brand IP",
+    href: "/work/business?preview=1&tab=create&intent=brand-ip&step=ip-draft&brand=As%20I%20Am%20by%20Chef%20Ton",
+  },
   { id: "manager", label: "Manager", href: "/oversight/manager?preview=1" },
+  {
+    id: "manager",
+    label: "Manager · Brand IP",
+    href: "/oversight/manager?preview=1&tab=brand-ip",
+  },
 ];
 
 export function PreviewMenu({
@@ -67,7 +77,7 @@ function PreviewMenuInner({
       {open ? (
         <ul className={listClass}>
           {presets.map((p) => (
-            <li key={p.id}>
+            <li key={p.href}>
               <button
                 type="button"
                 className="flex min-h-11 w-full items-center px-3 text-left text-[13px] text-ink hover:bg-elevated"
