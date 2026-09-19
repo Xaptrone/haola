@@ -6,17 +6,16 @@ import { BlankCanvas } from "@/components/ai/BlankCanvas";
 import { ActionFeed } from "@/components/feed/ActionFeed";
 import { PhoneFrame } from "@/components/shells/PhoneFrame";
 import { MobileAppShell, StudioShell } from "@/components/shells/WorkShells";
-import { ActionCard, type ActionCardModel } from "@/components/ui/ActionCard";
-import { ClarifyChips } from "@/components/ui/ClarifyChips";
+import { ActionCard } from "@/components/ui/ActionCard";
 import { ReviewPipeline } from "@/components/review/ReviewPipeline";
 import { NeedWorkspace } from "@/components/auth/NeedWorkspace";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { KolCreateFlow } from "@/components/studio/KolCreateFlow";
 import { creatorNav } from "@/lib/nav";
-import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
 import { useSession } from "@/lib/session";
 import { useDesktop } from "@/lib/use-desktop";
-import { CREATOR_MARKETS } from "@/lib/creator-registration";
+import type { Kol } from "@/lib/types";
 
 export function StudioView() {
   const { session, patchCreator, loadPreset, ready } = useSession();
@@ -27,8 +26,6 @@ export function StudioView() {
   const as = useSearchParams().get("as");
   const preview = useSearchParams().get("preview") === "1";
   const ws = session.creatorWorkspace;
-  const [flow, setFlow] = useState<"idle" | "market" | "audience" | "done">("idle");
-  const [answers, setAnswers] = useState({ market: "", audience: "" });
   const [deskMode, setDeskMode] = useState<"phone" | "canvas">(
     preview ? "phone" : "canvas",
   );
@@ -47,33 +44,6 @@ export function StudioView() {
   const waitingMine = myJobs.filter((j) => j.waitingOn === "creator");
   const selected = myJobs.find((j) => j.id === jobQ) ?? null;
   const lockedIp = market.ipJobs.find((j) => j.status === "handed_off") ?? null;
-
-  const kolCard: ActionCardModel = useMemo(
-    () => ({
-      id: "avatar",
-      kind: "avatar",
-      title: "Avatar proposal · Mei Lin",
-      provenance: "ai",
-      body: "Warm, precise, never shouty. Speaks to 25–34 people who care how a brand feels.",
-      rows: [
-        { label: "Market", value: answers.market || "Penang & KL", provenance: "user" },
-        { label: "Audience", value: answers.audience || "Brand explorers", provenance: "user" },
-        { label: "Voice", value: "EN / 中文 · low-key", provenance: "ai" },
-      ],
-      score: { value: 82, label: "Avatar Market-Fit" },
-      factors: [
-        { label: "Market whitespace", value: "Premium SMEs, not shouty ads" },
-        { label: "Language pair", value: "Matches KL + Penang" },
-        { label: "Distinctiveness", value: "Clear vs existing KOLs" },
-      ],
-      actions: [
-        { id: "accept", label: "Accept" },
-        { id: "edit", label: "Edit", variant: "ghost" },
-        { id: "regen", label: "Regenerate", variant: "quiet" },
-      ],
-    }),
-    [answers],
-  );
 
   if (!ready) {
     return (
@@ -118,51 +88,44 @@ export function StudioView() {
     return <NeedWorkspace kind="creator" />;
   }
 
+  const creatingKol = ws.canvasIntent === "kol";
   const makingContent = ws.canvasIntent === "content" || ws.canvasIntent === "upload";
   const creating =
-    tab === "create" || ws.canvasIntent === "blank" || flow !== "idle" || makingContent;
+    tab === "create" ||
+    ws.canvasIntent === "blank" ||
+    creatingKol ||
+    makingContent;
   const isBlank =
-    flow === "idle" &&
+    !creatingKol &&
     !selected &&
     !makingContent &&
     (tab === "create" || (!ws.kols.length && tab === "home") || ws.canvasIntent === "blank");
 
   function startKol() {
     patchCreator({ canvasIntent: "kol" });
-    if (ws?.market) {
-      setAnswers((a) => ({ ...a, market: ws.market ?? "" }));
-      setFlow("audience");
-      return;
-    }
-    setFlow("market");
   }
 
-  function acceptKol() {
+  function cancelKol() {
+    if (!ws) return;
+    patchCreator({ canvasIntent: ws.kols.length ? null : "blank" });
+  }
+
+  function acceptKol(kol: Kol) {
+    if (!ws) return;
     patchCreator({
       canvasIntent: null,
-      kols: [
-        {
-          id: uid("kol"),
-          name: "Mei Lin",
-          market: answers.market,
-          audience: answers.audience,
-          categories: "Lifestyle, services, F&B",
-          language: "EN / 中文",
-          personality: "Warm, precise",
-          amf: 82,
-        },
-      ],
+      kols: [...ws.kols, kol],
       feed: [
         {
           id: "amf",
-          title: "Mei Lin has an AMF of 82",
+          title: `${kol.name} has an AMF of ${kol.amf}`,
           detail: "Predicted · inspect factors",
           href: "/work/studio?tab=kols",
           tone: "info",
         },
+        ...ws.feed,
       ],
     });
-    setFlow("idle");
   }
 
   const board = (
@@ -187,45 +150,16 @@ export function StudioView() {
           }}
         />
       ) : null}
-      {flow === "market" ? (
+      {creatingKol ? (
         <div className="mx-auto max-w-md">
-          <ClarifyChips
-            question="Which market should this KOL serve?"
-            options={[...CREATOR_MARKETS]}
-            onPick={(v) => {
-              setAnswers((a) => ({ ...a, market: v }));
-              setFlow("audience");
-            }}
+          <KolCreateFlow
+            defaultMarket={ws.market}
+            onAccept={acceptKol}
+            onCancel={cancelKol}
           />
         </div>
       ) : null}
-      {flow === "audience" ? (
-        <div className="mx-auto max-w-md">
-          <ClarifyChips
-            question="Who should follow this personality?"
-            options={[
-              "25–34 brand explorers",
-              "Premium regulars",
-              "Weekend group buyers",
-            ]}
-            onPick={(v) => {
-              setAnswers((a) => ({ ...a, audience: v }));
-              setFlow("done");
-            }}
-          />
-        </div>
-      ) : null}
-      {flow === "done" ? (
-        <div className="mx-auto max-w-md">
-          <ActionCard
-            card={kolCard}
-            onAction={(id) => {
-              if (id === "accept") acceptKol();
-            }}
-          />
-        </div>
-      ) : null}
-      {!selected && !creating && ws.kols.length && flow === "idle" ? (
+      {!selected && !creating && ws.kols.length && !creatingKol ? (
         <div className="mx-auto max-w-md space-y-6">
           {tab === "home" ? (
             <>
@@ -296,13 +230,28 @@ export function StudioView() {
             </div>
           ) : null}
           {tab === "kols" ? (
-            <ActionCard
-              card={{
-                ...kolCard,
-                title: `${ws.kols[0].name} · AMF ${ws.kols[0].amf}`,
-                actions: [{ id: "inspect", label: "Inspect factors" }],
-              }}
-            />
+            <div className="space-y-4">
+              {ws.kols.map((kol) => (
+                <ActionCard
+                  key={kol.id}
+                  card={{
+                    id: kol.id,
+                    kind: "avatar",
+                    title: `${kol.name} · AMF ${kol.amf}`,
+                    provenance: "predicted",
+                    body: `${kol.personality}. Speaks to ${kol.audience}.`,
+                    rows: [
+                      { label: "Market", value: kol.market, provenance: "user" },
+                      { label: "Audience", value: kol.audience, provenance: "user" },
+                      { label: "Known for", value: kol.categories, provenance: "user" },
+                      { label: "Voice", value: kol.language, provenance: "user" },
+                    ],
+                    score: { value: kol.amf, label: "Avatar Market-Fit" },
+                    actions: [{ id: "inspect", label: "Inspect factors" }],
+                  }}
+                />
+              ))}
+            </div>
           ) : null}
           {tab === "profile" ? (
             <div className="space-y-4">
@@ -335,7 +284,7 @@ export function StudioView() {
           ) : null}
         </div>
       ) : null}
-      {!selected && makingContent && flow === "idle" ? (
+      {!selected && makingContent && !creatingKol ? (
         <div className="mx-auto max-w-md space-y-4">
           <h1 className="text-2xl font-medium tracking-tight">Jobs on the board</h1>
           {waitingMine.length ? (

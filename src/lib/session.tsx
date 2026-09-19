@@ -173,6 +173,7 @@ const activeCreator = (): Session => ({
     kind: "creator",
     id: AISHA_CREATOR_ID,
     name: "Aisha's studio",
+    market: "Both KL and Penang",
     kols: [sampleKol()],
     canvasIntent: null,
     feed: [
@@ -244,7 +245,7 @@ function sessionFromPreset(id: DemoPreset): {
         displayName: "Aisha",
         email: "aisha@studio.my",
         businessWorkspace: null,
-        creatorWorkspace: newCreatorWorkspace("Aisha"),
+        creatorWorkspace: newCreatorWorkspace("Aisha", { market: "Penang" }),
       },
       guestDraft: null,
     };

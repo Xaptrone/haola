@@ -68,6 +68,8 @@ Blank canvas is empty on purpose. One question, three intents:
 
 AI then runs the conversational flow. Cards appear on the canvas (desktop) or as a stack (mobile). Never open a long form on a blank canvas.
 
+Virtual KOL create is still chips, not a profile wall: market (skipped if the studio already has one) → who follows them → what they are known for → how they sound → avatar proposal card built from those answers. One question at a time.
+
 First-run copy: welcome by name, one line on what Haola is for creators, then the three intents. No settings, no empty tables, no “complete your profile” wall before they can create.
 
 ---
