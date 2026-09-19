@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BlankCanvas } from "@/components/ai/BlankCanvas";
 import { ActionFeed } from "@/components/feed/ActionFeed";
 import { PhoneFrame } from "@/components/shells/PhoneFrame";
@@ -21,10 +21,12 @@ export function StudioView() {
   const { session, patchCreator, loadPreset, ready } = useSession();
   const market = useMarketplace();
   const desktop = useDesktop();
-  const tab = useSearchParams().get("tab") ?? "home";
-  const jobQ = useSearchParams().get("job");
-  const as = useSearchParams().get("as");
-  const preview = useSearchParams().get("preview") === "1";
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab") ?? "home";
+  const jobQ = searchParams.get("job");
+  const as = searchParams.get("as");
+  const preview = searchParams.get("preview") === "1";
   const ws = session.creatorWorkspace;
   const [deskMode, setDeskMode] = useState<"phone" | "canvas">(
     preview ? "phone" : "canvas",
@@ -126,6 +128,11 @@ export function StudioView() {
         ...ws.feed,
       ],
     });
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("tab", "kols");
+    next.delete("as");
+    const query = next.toString();
+    router.push(query ? `/work/studio?${query}` : "/work/studio?tab=kols");
   }
 
   const board = (
