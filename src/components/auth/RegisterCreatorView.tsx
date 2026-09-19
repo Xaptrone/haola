@@ -12,7 +12,6 @@ import {
   clearPendingCreatorProfile,
   creatorNameError,
   parseCreatorHandle,
-  peekPendingCreatorHandle,
   peekPendingCreatorName,
   stashPendingCreatorHandle,
   suggestCreatorName,
@@ -72,7 +71,10 @@ function CreatorNameForm({
           <span className="sr-only">Creator name</span>
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (error) setError(null);
+            }}
             autoComplete="nickname"
             autoFocus
             placeholder="Creator name"
@@ -117,10 +119,9 @@ export function RegisterCreatorView({
     (session.role === "business" && Boolean(session.businessWorkspace)) ||
     session.role === "manager";
   const pendingName = ready ? peekPendingCreatorName() : "";
-  const pendingOk = creatorNameError(pendingName) === null;
 
   useEffect(() => {
-    if (!ready || opening.current) return;
+    if (!ready) return;
 
     if (hasCreatorStudio) {
       router.replace("/work/studio");
@@ -134,26 +135,11 @@ export function RegisterCreatorView({
       router.replace("/oversight/manager");
       return;
     }
-    if (!identity) return;
-    if (!pendingOk) return;
-
-    opening.current = true;
-    registerCreator({
-      creatorName: pendingName,
-      email: identity.email,
-      handle: peekPendingCreatorHandle(),
-    });
-    clearPendingCreatorProfile();
-    router.replace("/work/studio");
   }, [
     ready,
-    identity,
     hasCreatorStudio,
-    pendingOk,
-    pendingName,
     session.role,
     session.businessWorkspace,
-    registerCreator,
     router,
   ]);
 
@@ -161,7 +147,7 @@ export function RegisterCreatorView({
     return <div className="min-h-dvh bg-canvas" />;
   }
 
-  if (hasCreatorStudio || hasOtherHome || (identity && pendingOk)) {
+  if (hasCreatorStudio || hasOtherHome) {
     return <OpeningStudio />;
   }
 
@@ -188,7 +174,7 @@ export function RegisterCreatorView({
       ) : (
         <CreatorNameForm
           key={identity.id}
-          initialName={suggestCreatorName(identity)}
+          initialName={pendingName || suggestCreatorName(identity)}
           onOpen={({ creatorName, handle }) => {
             opening.current = true;
             registerCreator({

@@ -20,7 +20,7 @@ Creators do not fill a business form. The name brands see is a **creator name**.
 4. Server/session creates the user + **creator workspace** named `{creator}'s studio`.
 5. Enter `/work/studio` immediately on a blank canvas: welcome by creator name, one line on what fxgen is for creators, then the three intents.
 
-Email that already collected a creator name can skip step 2 and open the studio. Returning login (`/login?intent=creator`) goes to the studio if it exists, otherwise back to creator name.
+Email that already collected a creator name still confirms it on step 2 (optional Instagram). Returning login (`/login?intent=creator`) goes to the studio if it exists, otherwise back to creator name.
 
 Do not land a new creator on settings, empty tables, or “complete your profile”. Do not ask for a business name, SSM, or company.
 

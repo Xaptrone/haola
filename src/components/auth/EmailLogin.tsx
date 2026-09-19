@@ -145,7 +145,10 @@ export function EmailLogin({
             <span className="sr-only">{creator ? "Creator name" : "Name"}</span>
             <input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) setError(null);
+              }}
               autoComplete={creator ? "nickname" : "name"}
               placeholder={creator ? "Creator name" : "Your name"}
               className={fieldClass}
