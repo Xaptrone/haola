@@ -8,11 +8,13 @@ export function GoogleButton({
   label = "Continue with Google",
   variant = "primary",
   disabled = false,
+  onBeforeSignIn,
 }: {
   callbackUrl: string;
   label?: string;
   variant?: "primary" | "ghost" | "quiet";
   disabled?: boolean;
+  onBeforeSignIn?: () => void;
 }) {
   return (
     <Button
@@ -20,7 +22,10 @@ export function GoogleButton({
       variant={variant}
       className="min-h-14 w-full gap-3"
       disabled={disabled}
-      onClick={() => signIn("google", { callbackUrl })}
+      onClick={() => {
+        onBeforeSignIn?.();
+        void signIn("google", { callbackUrl });
+      }}
     >
       <GoogleMark />
       {label}

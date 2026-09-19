@@ -14,13 +14,13 @@ export default async function LoginPage({
 }) {
   const session = await auth();
   const { intent, next, error } = await searchParams;
-  if (session?.user) {
-    redirect(next || (intent ? `/start?intent=${intent}` : "/start"));
-  }
+  const creator = intent === "creator";
+  const afterAuth =
+    next || (creator ? "/register/creator" : intent ? `/start?intent=${intent}` : "/start");
 
-  const callbackUrl = `/start${intent ? `?intent=${intent}` : ""}${
-    next ? `${intent ? "&" : "?"}next=${encodeURIComponent(next)}` : ""
-  }`;
+  if (session?.user) {
+    redirect(afterAuth);
+  }
 
   let errorCopy: string | null = null;
   if (error === "Configuration") {
@@ -38,7 +38,10 @@ export default async function LoginPage({
         <p className="mt-6 text-sm text-rose">{errorCopy}</p>
       ) : null}
       <EmailLogin
-        callbackUrl={callbackUrl}
+        intent={creator ? "creator" : intent === "business" ? "business" : undefined}
+        initialMode={creator ? "login" : "register"}
+        registerHref={creator ? "/register/creator" : undefined}
+        callbackUrl={afterAuth}
         googleConfigured={googleAuthConfigured()}
         whatsappConfigured={whatsappAuthConfigured()}
       />

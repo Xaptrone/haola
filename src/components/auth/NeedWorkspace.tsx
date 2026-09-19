@@ -5,11 +5,18 @@ import { useSession } from "@/lib/session";
 
 export function NeedWorkspace({ kind }: { kind: "business" | "creator" }) {
   const { identity } = useSession();
-  const href = identity ? "/start" : `/login?intent=${kind}`;
+  const href =
+    kind === "creator"
+      ? identity
+        ? "/register/creator"
+        : "/login?intent=creator"
+      : identity
+        ? "/start"
+        : "/login?intent=business";
   const copy =
     kind === "business"
       ? "Business workspace opens after you log in."
-      : "Studio opens after you log in.";
+      : "Studio opens after you name yourself as a creator.";
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
@@ -18,7 +25,7 @@ export function NeedWorkspace({ kind }: { kind: "business" | "creator" }) {
         href={href}
         className="inline-flex min-h-12 items-center justify-center rounded-full bg-accent px-5 text-sm font-medium text-ink"
       >
-        {identity ? "Choose a workspace" : "Log in"}
+        {identity ? (kind === "creator" ? "Open your studio" : "Choose a workspace") : "Log in"}
       </Link>
     </div>
   );

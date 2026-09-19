@@ -173,6 +173,7 @@ export function StudioView() {
       {!selected && isBlank ? (
         <BlankCanvas
           name={session.displayName}
+          firstRun={!ws.kols.length}
           onPick={(intent) => {
             if (intent === "kol") startKol();
             else patchCreator({ canvasIntent: intent });
@@ -298,6 +299,17 @@ export function StudioView() {
           ) : null}
           {tab === "profile" ? (
             <div className="space-y-4">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+                  Profile
+                </p>
+                <h1 className="mt-2 text-2xl font-medium tracking-tight">
+                  {session.displayName}
+                </h1>
+                {ws.handle ? (
+                  <p className="mt-1 text-sm text-muted">@{ws.handle}</p>
+                ) : null}
+              </div>
               <ActionCard
                 card={{
                   id: "pay",

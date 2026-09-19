@@ -17,6 +17,10 @@ import type {
 } from "./types";
 import { previewPresetFromLocation, type DemoPreset } from "./preview";
 import { ASIAM_BUSINESS_ID, AISHA_CREATOR_ID } from "./review";
+import {
+  normalizeCreatorName,
+  studioNameFromCreator,
+} from "./creator-registration";
 
 const GUEST_KEY = "fxgen.guest.v1";
 
@@ -54,11 +58,15 @@ function sampleKol(): CreatorWorkspace["kols"][number] {
   };
 }
 
-function newCreatorWorkspace(name: string): CreatorWorkspace {
+function newCreatorWorkspace(
+  creatorName: string,
+  handle?: string,
+): CreatorWorkspace {
   return {
     kind: "creator",
     id: uid("cws"),
-    name: `${name}'s studio`,
+    name: studioNameFromCreator(creatorName),
+    handle,
     kols: [],
     feed: [],
     canvasIntent: "blank",
@@ -198,7 +206,11 @@ type SessionApi = {
   identity: AuthIdentity | null;
   guestDraft: CampaignDraft | null;
   setGuestDraft: (draft: CampaignDraft | null) => void;
-  registerCreator: (name: string, email: string) => void;
+  registerCreator: (input: {
+    creatorName: string;
+    email: string;
+    handle?: string;
+  }) => void;
   registerBusiness: (name: string, email: string) => void;
   loginReadyBusiness: () => void;
   loginActiveCreator: () => void;
@@ -352,15 +364,19 @@ export function SessionProvider({
     }
   }, [session, guestDraft, ready, identity]);
 
-  const registerCreator = useCallback((name: string, email: string) => {
-    setSession({
-      role: "creator",
-      displayName: name,
-      email,
-      businessWorkspace: null,
-      creatorWorkspace: newCreatorWorkspace(name),
-    });
-  }, []);
+  const registerCreator = useCallback(
+    (input: { creatorName: string; email: string; handle?: string }) => {
+      const creatorName = normalizeCreatorName(input.creatorName);
+      setSession({
+        role: "creator",
+        displayName: creatorName,
+        email: input.email,
+        businessWorkspace: null,
+        creatorWorkspace: newCreatorWorkspace(creatorName, input.handle),
+      });
+    },
+    [],
+  );
 
   const registerBusiness = useCallback(
     (name: string, email: string) => {

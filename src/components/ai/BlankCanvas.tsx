@@ -3,15 +3,22 @@
 export function BlankCanvas({
   onPick,
   name,
+  firstRun,
 }: {
   onPick: (intent: "kol" | "content" | "upload") => void;
   name?: string;
+  firstRun?: boolean;
 }) {
   return (
     <div className="mx-auto flex min-h-[60dvh] max-w-md flex-col items-center justify-center px-2 text-center">
       <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-        {name ? `${name}'s studio` : "Blank canvas"}
+        {firstRun && name ? `Welcome, ${name}` : name ? `${name}'s studio` : "Blank canvas"}
       </p>
+      {firstRun ? (
+        <p className="mt-3 text-sm leading-6 text-muted">
+          Make virtual KOLs. Brands hire the ones that fit.
+        </p>
+      ) : null}
       <h1 className="mt-4 text-[32px] font-semibold leading-[1.1] tracking-[-0.03em] text-ink">
         What are we making?
       </h1>

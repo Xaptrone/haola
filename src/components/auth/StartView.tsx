@@ -7,7 +7,7 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { useSession } from "@/lib/session";
 
 export function StartView() {
-  const { session, ready, identity, registerBusiness, registerCreator, guestDraft, enterManager } =
+  const { session, ready, identity, registerBusiness, guestDraft, enterManager } =
     useSession();
   const router = useRouter();
   const intent = useSearchParams().get("intent");
@@ -16,7 +16,7 @@ export function StartView() {
   useEffect(() => {
     if (!ready) return;
     if (!identity) {
-      router.replace("/login");
+      router.replace(intent === "creator" ? "/register/creator" : "/login");
       return;
     }
     if (session.role === "business") {
@@ -29,16 +29,23 @@ export function StartView() {
     }
     if (session.role === "manager") {
       router.replace(next || "/oversight/manager");
+      return;
     }
-  }, [ready, identity, session.role, router, next]);
+    if (intent === "creator") {
+      router.replace("/register/creator");
+    }
+  }, [ready, identity, session.role, router, next, intent]);
 
   if (!ready || !identity || session.role !== "anonymous") {
     return <div className="min-h-dvh bg-canvas" />;
   }
 
+  if (intent === "creator") {
+    return <div className="min-h-dvh bg-canvas" />;
+  }
+
   const name = identity.name;
   const email = identity.email;
-  const businessPrimary = Boolean(guestDraft) || intent !== "creator";
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6">
@@ -57,11 +64,7 @@ export function StartView() {
       <div className="mt-8 space-y-2">
         <button
           type="button"
-          className={`flex min-h-14 w-full items-center justify-center rounded-full px-5 text-[15px] font-medium ${
-            businessPrimary
-              ? "bg-accent text-ink"
-              : "border border-line bg-elevated text-ink"
-          }`}
+          className="flex min-h-14 w-full items-center justify-center rounded-full bg-accent px-5 text-[15px] font-medium text-ink"
           onClick={() => {
             registerBusiness(name, email);
             router.push("/work/business");
@@ -71,17 +74,9 @@ export function StartView() {
         </button>
         <button
           type="button"
-          className={`flex min-h-14 w-full items-center justify-center rounded-full px-5 text-[15px] font-medium ${
-            businessPrimary
-              ? "border border-line bg-elevated text-ink"
-              : "bg-accent text-ink"
-          }`}
+          className="flex min-h-14 w-full items-center justify-center rounded-full border border-line bg-elevated px-5 text-[15px] font-medium text-ink"
           onClick={() => {
-            registerCreator(
-              identity.id.startsWith("wa:") ? "My studio" : name,
-              email,
-            );
-            router.push("/work/studio");
+            router.push("/register/creator");
           }}
         >
           I&apos;m a creator

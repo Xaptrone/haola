@@ -10,6 +10,20 @@ Phase 1 has two product workspaces (plus later manager/admin oversight, which is
 
 Provisioned on creator registration. Purpose: make virtual KOLs and content.
 
+### Register
+
+Creators do not fill a business form. The name brands see is a **creator name**.
+
+1. `/creators` → Open a studio → `/register/creator`.
+2. **1 of 2 · Sign in** — email (creator name + email + password), Google, or WhatsApp. Copy is studio language (`you@email.com`), never `you@brand.my`.
+3. **2 of 2 · Creator name** — “What should brands call you?” Required creator name. Optional Instagram handle. WhatsApp does not use the phone as the name. Google may prefill a person name; they can edit it.
+4. Server/session creates the user + **creator workspace** named `{creator}'s studio`.
+5. Enter `/work/studio` immediately on a blank canvas: welcome by creator name, one line on what fxgen is for creators, then the three intents.
+
+Email that already collected a creator name can skip step 2 and open the studio. Returning login (`/login?intent=creator`) goes to the studio if it exists, otherwise back to creator name.
+
+Do not land a new creator on settings, empty tables, or “complete your profile”. Do not ask for a business name, SSM, or company.
+
 The same workspace has three presentations. Do not ship three products — ship one studio that changes chrome.
 
 ### Mobile (`< lg`)
@@ -129,7 +143,7 @@ Workspace opens with the draft campaign brief and recommended KOL cards already 
 | Business workspace | Owner | Draft / setup / action feed (never empty admin) |
 | `/oversight/*` | Manager, admin, owner performance | Queues, metrics, drill-down |
 
-Manager and Admin also get workspaces later (review queues). Google login opens `/start` to pick business or creator. Staff emails in `FXGEN_MANAGER_EMAILS` can open Operations. Internal preview: `?preview=1`.
+Manager and Admin also get workspaces later (review queues). Google login without intent opens `/start` to pick business or creator. Creator intent (`/register/creator` or `/login?intent=creator`) never asks for a business name. Staff emails in `FXGEN_MANAGER_EMAILS` can open Operations. Internal preview: `?preview=1`.
 
 ---
 

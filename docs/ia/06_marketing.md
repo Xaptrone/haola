@@ -23,4 +23,4 @@ Do not lead with Book a demo. Groups/chains may have a muted contact link.
 
 ## Creators
 
-Quiet “I’m a creator” → `/creators` waitlist. Full creator marketing later.
+Quiet “I’m a creator” → `/creators` → `/register/creator`. Creator name, then studio. Full creator marketing later.

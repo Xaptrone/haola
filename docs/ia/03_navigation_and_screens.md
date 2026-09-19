@@ -26,26 +26,12 @@ Not charts. Feed of: needs attention, do next, what changed, AI recommends.
 
 - `/` business landing + guest AI
 - `/creators` creator door
-- `/login` `/start` Google sign-in then workspace pick
+- `/register/creator` sign in, then creator name, then studio
+- `/login` `/start` Google sign-in then workspace pick (creator intent skips the pick)
 - `/work/studio` creator workspace (blank canvas / canvas / mobile home)
 - `/work/business` business workspace (setup / draft / create intents / content pipeline)
 - `/work/review` 3-step review pipeline
 - `/oversight/manager` action queue + credit ledger
-
-
-## Home (all work roles)
-
-Not charts. Feed of: needs attention, do next, what changed, AI recommends.
-
-## Phase 1 coded screens
-
-- `/` business landing + guest AI
-- `/creators` creator door
-- `/login` `/start` Google sign-in then workspace pick
-- `/work/studio` creator workspace (blank canvas / canvas / mobile home)
-- `/work/business` business workspace (setup / draft / home)
-- `/work/review` video review (mobile full-screen, desktop split)
-- `/oversight/manager` action queue + drillable metrics
 
 ## Desktop nav
 
