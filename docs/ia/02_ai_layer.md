@@ -30,7 +30,7 @@ type AiContext = {
 
 ## Clarify protocol
 
-If a fact is required and missing (outlet, price scope, visit/taste, bookings vs awareness, promo window), ask one short question with 2–3 chips. Do not invent.
+If a fact is required and missing (outlet, price scope, visit/taste, bookings vs awareness, promo window), ask one short question with 2–3 chips. Do not invent. Creator KOL create may show more audience chips (life stage × shopper type) because that is a casting choice, then still one question at a time for craft and voice.
 
 ## Output
 
