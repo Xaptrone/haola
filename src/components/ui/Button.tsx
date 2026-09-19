@@ -13,10 +13,12 @@ const styles: Record<Variant, string> = {
 export function Button({
   variant = "primary",
   className = "",
+  type = "button",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   return (
     <button
+      type={type}
       className={`inline-flex min-h-11 items-center justify-center rounded-full px-5 text-[15px] font-medium transition-[background-color,color,border-color,transform] duration-[var(--duration-press)] ease-[var(--ease-out)] ${styles[variant]} ${className}`}
       {...props}
     />

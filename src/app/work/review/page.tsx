@@ -43,7 +43,7 @@ function ReviewBody() {
       onChange={(next) => market.patchReview(next.id, next)}
       onFinalApprove={(next) => {
         market.patchReview(next.id, next);
-        market.releaseJob(next, session.displayName || "Nadia");
+        market.releaseJob(next, session.displayName || "Manager");
       }}
     />
   ) : (

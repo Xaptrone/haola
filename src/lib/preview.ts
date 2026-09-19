@@ -7,6 +7,16 @@ export type DemoPreset =
   | "business-ready"
   | "manager";
 
+type PreviewEnv = {
+  NODE_ENV?: string;
+  NEXT_PUBLIC_FXGEN_PREVIEW?: string;
+};
+
+/** Internal demo surfaces. Off unless NEXT_PUBLIC_FXGEN_PREVIEW=1. */
+export function previewSurfacesEnabled(env: PreviewEnv = process.env): boolean {
+  return env.NEXT_PUBLIC_FXGEN_PREVIEW === "1";
+}
+
 /** Map a preview URL to the demo preset it should boot. */
 export function previewPresetFromLocation(
   pathname: string,
@@ -30,4 +40,14 @@ export function previewPresetFromLocation(
     return "business-ready";
   }
   return "guest";
+}
+
+/** URL mapping, but only when preview surfaces are enabled. */
+export function activePreviewPreset(
+  pathname: string,
+  search = "",
+  env: PreviewEnv = process.env,
+): DemoPreset | null {
+  if (!previewSurfacesEnabled(env)) return null;
+  return previewPresetFromLocation(pathname, search);
 }

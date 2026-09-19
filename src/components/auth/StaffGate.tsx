@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "@/lib/session";
+import { previewSurfacesEnabled } from "@/lib/preview";
 
 export function StaffGate({ children }: { children: React.ReactNode }) {
   const { identity, ready } = useSession();
-  const preview = useSearchParams().get("preview") === "1";
+  const previewParam = useSearchParams().get("preview") === "1";
+  const preview = previewSurfacesEnabled() && previewParam;
 
   if (!ready) return <div className="min-h-dvh bg-canvas" />;
   if (preview || identity?.manager) return children;

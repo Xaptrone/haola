@@ -27,7 +27,8 @@ export function BusinessView() {
   const tab = useSearchParams().get("tab") ?? "home";
   const flowQ = useSearchParams().get("flow");
   const jobQ = useSearchParams().get("job");
-  const preview = useSearchParams().get("preview") === "1";
+  const previewParam = useSearchParams().get("preview") === "1";
+  const preview = market.preview && previewParam;
   const ws = session.businessWorkspace;
   const [step, setStep] = useState<"idle" | "business" | "goal">(
     flowQ === "setup" ? "business" : "idle",
@@ -61,6 +62,11 @@ export function BusinessView() {
       );
     }
   }, [ready, preview, session.role, loadPreset]);
+
+  useEffect(() => {
+    if (!ws) return;
+    market.ensureParty({ id: ws.id, name: ws.name, kind: "business" });
+  }, [ws, market]);
 
   if (!ready) {
     return (
@@ -251,6 +257,11 @@ export function BusinessView() {
               </p>
             ) : null}
           </div>
+          {tab === "home" && isOwner && market.businessBalance(ws.id) === 0 ? (
+            <p className="text-sm text-muted">
+              Credits start at zero. fxgen loads them after payment.
+            </p>
+          ) : null}
           {tab === "home" && !isOwner ? (
             <p className="text-sm text-muted">
               Marketing can submit briefs. The owner approves spend.
@@ -298,7 +309,7 @@ export function BusinessView() {
                 kind: "payment",
                 title: "Need credits",
                 provenance: "verified",
-                body: creditError,
+                body: `${creditError} Ask fxgen to load credits after payment.`,
                 actions: [{ id: "ok", label: "Got it" }],
               }}
               onAction={() => setCreditError(null)}
@@ -349,10 +360,12 @@ export function BusinessView() {
 
           {tab === "business" ? (
             <div className="space-y-6">
-              <SeatToggle
-                seat={ws.seat ?? "owner"}
-                onChange={(seat) => patchBusiness({ seat })}
-              />
+              {preview ? (
+                <SeatToggle
+                  seat={ws.seat ?? "owner"}
+                  onChange={(seat) => patchBusiness({ seat })}
+                />
+              ) : null}
               <BalanceLine
                 label="Spendable credits"
                 amount={market.businessBalance(ws.id)}

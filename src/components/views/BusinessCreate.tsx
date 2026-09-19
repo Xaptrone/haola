@@ -9,7 +9,7 @@ import { PRICE } from "@/lib/credits";
 import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
 import { upsertBrand } from "@/lib/brands";
-import { newReviewJob } from "@/lib/review";
+import { newReviewJob, UNASSIGNED_CREATOR, UNASSIGNED_KOL } from "@/lib/review";
 import { useSession } from "@/lib/session";
 import type { CreateIntent, ReviewJob } from "@/lib/types";
 
@@ -173,8 +173,8 @@ export function BusinessCreate({
       dos: copy.dos,
       donts: copy.donts,
       sampleLines: copy.sampleLines,
-      creatorName: "Aisha",
-      kolName: "Mei Lin",
+      creatorName: UNASSIGNED_CREATOR,
+      kolName: UNASSIGNED_KOL,
     };
     const job = newReviewJob({
       title: `Brand IP · ${campaignBusiness || workspaceName}`,
@@ -289,7 +289,10 @@ export function BusinessCreate({
                 { label: "Hold", value: rm(PRICE.campaign), provenance: "verified" },
               ],
               actions: [
-                { id: "accept", label: isOwner ? "Accept" : "Submit to owner" },
+                {
+                  id: "accept",
+                  label: isOwner ? "Accept" : "Submit to owner",
+                },
                 { id: "edit", label: "Edit", variant: "ghost" },
               ],
             }}
@@ -315,7 +318,6 @@ export function BusinessCreate({
                   id: "accept",
                   label: isOwner ? "Accept match" : "Submit to owner",
                 },
-                { id: "compare", label: "Compare", variant: "ghost" },
               ],
             }}
             onAction={(actionId) => {
@@ -415,7 +417,7 @@ export function BusinessCreate({
             kind: "payment",
             title: "Need credits",
             provenance: "verified",
-            body: creditError,
+            body: `${creditError} Ask fxgen to load credits after payment.`,
             actions: [{ id: "ok", label: "Got it" }],
           }}
           onAction={() => setCreditError(null)}

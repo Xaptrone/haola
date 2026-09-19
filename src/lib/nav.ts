@@ -55,7 +55,6 @@ export const managerNav: NavItem[] = [
     href: "/work/review",
     label: "Reviews",
     icon: "reviews",
-    badge: 2,
   },
   {
     key: "creators",

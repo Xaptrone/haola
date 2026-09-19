@@ -14,8 +14,10 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { creatorNav } from "@/lib/nav";
 import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
+import { isUnassignedCreator, UNASSIGNED_KOL } from "@/lib/review";
 import { useSession } from "@/lib/session";
 import { useDesktop } from "@/lib/use-desktop";
+import type { ReviewJob } from "@/lib/types";
 
 export function StudioView() {
   const { session, patchCreator, loadPreset, ready } = useSession();
@@ -24,7 +26,8 @@ export function StudioView() {
   const tab = useSearchParams().get("tab") ?? "home";
   const jobQ = useSearchParams().get("job");
   const as = useSearchParams().get("as");
-  const preview = useSearchParams().get("preview") === "1";
+  const previewParam = useSearchParams().get("preview") === "1";
+  const preview = market.preview && previewParam;
   const ws = session.creatorWorkspace;
   const [flow, setFlow] = useState<"idle" | "market" | "audience" | "done">("idle");
   const [answers, setAnswers] = useState({ market: "", audience: "" });
@@ -38,10 +41,23 @@ export function StudioView() {
     if (as === "new") loadPreset("creator-new");
   }, [ready, as, preview, loadPreset]);
 
+  useEffect(() => {
+    if (!ws) return;
+    market.ensureParty({
+      id: ws.id,
+      name: session.displayName,
+      kind: "creator",
+    });
+  }, [ws, session.displayName, market]);
+
   const myJobs = useMemo(
     () =>
       market.reviews.filter((j) => j.creatorName === session.displayName),
     [market.reviews, session.displayName],
+  );
+  const openMatches = useMemo(
+    () => market.reviews.filter((j) => isUnassignedCreator(j.creatorName)),
+    [market.reviews],
   );
   const waitingMine = myJobs.filter((j) => j.waitingOn === "creator");
   const selected = myJobs.find((j) => j.id === jobQ) ?? null;
@@ -159,6 +175,27 @@ export function StudioView() {
     setFlow("idle");
   }
 
+  function claimJob(job: ReviewJob) {
+    if (!ws) return;
+    const kol = ws.kols[0]?.name ?? UNASSIGNED_KOL;
+    market.patchReview(job.id, {
+      ...job,
+      creatorName: session.displayName,
+      kolName: kol,
+      adminLog: [
+        {
+          id: uid("log"),
+          text:
+            kol === UNASSIGNED_KOL
+              ? `${session.displayName} accepted this match.`
+              : `${session.displayName} accepted this match · KOL ${kol}.`,
+          at: "Just now",
+        },
+        ...job.adminLog,
+      ],
+    });
+  }
+
   const board = (
     <>
       {selected ? (
@@ -217,7 +254,7 @@ export function StudioView() {
           />
         </div>
       ) : null}
-      {!selected && !creating && ws.kols.length && flow === "idle" ? (
+      {!selected && !creating && flow === "idle" && (ws.kols.length || tab === "campaigns" || tab === "profile") ? (
         <div className="mx-auto max-w-md space-y-6">
           {tab === "home" ? (
             <>
@@ -240,6 +277,17 @@ export function StudioView() {
                   }))}
                 />
               ) : null}
+              {openMatches.length ? (
+                <ActionFeed
+                  items={openMatches.map((j) => ({
+                    id: `open-${j.id}`,
+                    title: `Open match · ${j.businessName}`,
+                    detail: j.title,
+                    href: `/work/studio?tab=campaigns`,
+                    tone: "action" as const,
+                  }))}
+                />
+              ) : null}
               <ActionFeed items={ws.feed} />
             </>
           ) : null}
@@ -257,6 +305,26 @@ export function StudioView() {
                     actions: [],
                   }}
                 />
+              ) : null}
+              {openMatches.length ? (
+                <div className="space-y-3">
+                  {openMatches.map((job) => (
+                    <ActionCard
+                      key={job.id}
+                      card={{
+                        id: job.id,
+                        kind: "kol",
+                        title: `Open match · ${job.businessName}`,
+                        provenance: "predicted",
+                        body: job.title,
+                        actions: [{ id: "accept", label: "Accept match" }],
+                      }}
+                      onAction={(id) => {
+                        if (id === "accept") claimJob(job);
+                      }}
+                    />
+                  ))}
+                </div>
               ) : null}
               {myJobs.length ? (
                 <ActionFeed
@@ -276,18 +344,15 @@ export function StudioView() {
                     provenance: "predicted",
                     score: { value: 91, label: "Campaign match" },
                     body: "Accept, compare, or skip. This is predicted, not a booking.",
-                    actions: [
-                      { id: "accept", label: "Accept campaign" },
-                      { id: "compare", label: "Compare", variant: "ghost" },
-                    ],
+                    actions: [{ id: "accept", label: "Accept campaign" }],
                   }}
                 />
-              ) : (
+              ) : openMatches.length ? null : (
                 <p className="text-sm text-muted">No campaigns yet. Matches land here.</p>
               )}
             </div>
           ) : null}
-          {tab === "kols" ? (
+          {tab === "kols" && ws.kols[0] ? (
             <ActionCard
               card={{
                 ...kolCard,
@@ -302,10 +367,10 @@ export function StudioView() {
                 card={{
                   id: "pay",
                   kind: "payment",
-                  title: `${rm(market.creatorBalance())} pending`,
+                  title: `${rm(market.creatorBalance(ws.id))} pending`,
                   provenance: "verified",
                   body: "Released after final approve. Payout rail is not live yet.",
-                  actions: [{ id: "payout", label: "Request payout" }],
+                  actions: [],
                 }}
               />
               <SignOutButton />
@@ -381,11 +446,7 @@ export function StudioView() {
         <StudioShell
           name={ws.name}
           actions={preview ? modeToggle : undefined}
-          composer={
-            <p className="text-center text-sm text-muted">
-              Composer stays here. Cards land on the canvas — not in a chat drawer.
-            </p>
-          }
+          composer={undefined}
         >
           <div className="flex min-h-full items-center justify-center px-8 py-12">
             {board}

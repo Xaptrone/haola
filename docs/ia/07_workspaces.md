@@ -129,7 +129,7 @@ Workspace opens with the draft campaign brief and recommended KOL cards already 
 | Business workspace | Owner | Draft / setup / action feed (never empty admin) |
 | `/oversight/*` | Manager, admin, owner performance | Queues, metrics, drill-down |
 
-Manager and Admin also get workspaces later (review queues). Google login opens `/start` to pick business or creator. Staff emails in `FXGEN_MANAGER_EMAILS` can open Operations. Internal preview: `?preview=1`.
+Manager and Admin also get workspaces later (review queues). Google login opens `/start` to pick business or creator. Staff emails in `FXGEN_MANAGER_EMAILS` can open Operations. Internal preview (`?preview=1`, `/preview`) is off in production unless `NEXT_PUBLIC_FXGEN_PREVIEW=1`.
 
 ---
 

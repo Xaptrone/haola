@@ -2,7 +2,7 @@
 
 Virtual KOL marketplace for Malaysian SMEs. Dark canvas, purple accent, AI as the operating layer.
 
-## Preview
+## Setup
 
 ```bash
 cp .env.example .env.local
@@ -12,7 +12,9 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Create an account with email, or log in with Google / WhatsApp when those are configured. Surfaces behind `?preview=1` are internal only.
+Open [http://localhost:3000](http://localhost:3000). Create an account with email, or log in with Google / WhatsApp when those are configured.
+
+The public site is live: landing, sign-in, empty workspaces. Internal Chef Ton demo chrome (`/preview`, `?preview=1`) is off unless you set `NEXT_PUBLIC_FXGEN_PREVIEW=1`.
 
 Google Cloud: authorized redirect `{origin}/api/auth/callback/google`. Production origin: `https://haola.escor.ai`.
 

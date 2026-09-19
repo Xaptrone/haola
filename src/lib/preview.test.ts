@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { previewPresetFromLocation } from "./preview.ts";
+import {
+  activePreviewPreset,
+  previewPresetFromLocation,
+  previewSurfacesEnabled,
+} from "./preview.ts";
 
 test("preview routes boot a demo workspace without login", () => {
   assert.equal(previewPresetFromLocation("/preview"), "business-ready");
@@ -30,4 +34,43 @@ test("non-preview URLs do not boot a demo", () => {
   assert.equal(previewPresetFromLocation("/work/business"), null);
   assert.equal(previewPresetFromLocation("/"), null);
   assert.equal(previewPresetFromLocation("/login"), null);
+});
+
+test("preview surfaces stay off unless explicitly enabled", () => {
+  assert.equal(previewSurfacesEnabled({}), false);
+  assert.equal(
+    previewSurfacesEnabled({ NODE_ENV: "development" }),
+    false,
+  );
+  assert.equal(
+    previewSurfacesEnabled({ NODE_ENV: "production" }),
+    false,
+  );
+  assert.equal(
+    previewSurfacesEnabled({ NEXT_PUBLIC_FXGEN_PREVIEW: "1" }),
+    true,
+  );
+  assert.equal(
+    previewSurfacesEnabled({
+      NODE_ENV: "development",
+      NEXT_PUBLIC_FXGEN_PREVIEW: "0",
+    }),
+    false,
+  );
+});
+
+test("production does not boot a demo from preview URLs", () => {
+  const env = { NODE_ENV: "production" };
+  assert.equal(activePreviewPreset("/preview", "", env), null);
+  assert.equal(
+    activePreviewPreset("/work/business", "preview=1", env),
+    null,
+  );
+  assert.equal(
+    activePreviewPreset("/preview", "", {
+      NODE_ENV: "production",
+      NEXT_PUBLIC_FXGEN_PREVIEW: "1",
+    }),
+    "business-ready",
+  );
 });

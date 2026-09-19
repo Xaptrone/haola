@@ -1,10 +1,15 @@
+import { PRICE } from "@/lib/credits";
+import { uid } from "@/lib/ids";
+import {
+  isUnassignedCreator,
+  UNASSIGNED_CREATOR,
+  UNASSIGNED_KOL,
+} from "@/lib/assignment";
 import type {
   PipelineStep,
   ReviewJob,
   ReviewWaitingOn,
 } from "@/lib/types";
-import { PRICE } from "@/lib/credits";
-import { uid } from "@/lib/ids";
 
 export const PIPELINE_STEPS: {
   id: PipelineStep;
@@ -30,6 +35,11 @@ export const PIPELINE_STEPS: {
 
 export const AISHA_CREATOR_ID = "cws-aisha";
 export const ASIAM_BUSINESS_ID = "bws-asiam";
+export {
+  isUnassignedCreator,
+  UNASSIGNED_CREATOR,
+  UNASSIGNED_KOL,
+} from "@/lib/assignment";
 
 export function newReviewJob(input: {
   title: string;
@@ -40,15 +50,20 @@ export function newReviewJob(input: {
   script: string;
   notes?: ReviewJob["notes"];
   photoLabels?: string[];
+  creatorName?: string;
+  kolName?: string;
 }): ReviewJob {
+  const creatorName = input.creatorName ?? UNASSIGNED_CREATOR;
+  const kolName = input.kolName ?? UNASSIGNED_KOL;
+  const assigned = !isUnassignedCreator(creatorName);
   return {
     id: uid("rev"),
     title: input.title,
     kind: input.kind,
     businessId: input.businessId,
     businessName: input.businessName,
-    creatorName: "Aisha",
-    kolName: "Mei Lin",
+    creatorName,
+    kolName,
     step: "script",
     waitingOn: "business",
     revisionsUsed: 0,
@@ -58,13 +73,15 @@ export function newReviewJob(input: {
       { name: "Offer", note: "Name the brand once. No unverified claims." },
     ],
     photoLabels: input.photoLabels ?? ["Hero", "Space", "Close"],
-    roughCaption: `Mei Lin · rough AI cut · ${input.title}`,
-    editedCaption: `Mei Lin · edited · ${input.title}`,
+    roughCaption: `${kolName} · rough AI cut · ${input.title}`,
+    editedCaption: `${kolName} · edited · ${input.title}`,
     priceCredits: input.priceCredits,
     adminLog: [
       {
         id: uid("log"),
-        text: `Job opened. Linked creator Aisha · KOL Mei Lin. Hold ${input.priceCredits} credits.`,
+        text: assigned
+          ? `Job opened. Linked creator ${creatorName} · KOL ${kolName}. Hold ${input.priceCredits} credits.`
+          : `Job opened. Awaiting a creator match. Hold ${input.priceCredits} credits.`,
         at: "Just now",
       },
     ],

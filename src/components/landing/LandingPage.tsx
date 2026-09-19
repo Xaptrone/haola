@@ -13,6 +13,7 @@ import {
 } from "@/lib/instagram";
 import { GuestCampaign } from "./GuestCampaign";
 import { InstagramGallery } from "./InstagramGallery";
+import { PreviewLink } from "@/components/demo/PreviewLink";
 
 export function LandingPage() {
   const [open, setOpen] = useState(false);
@@ -27,9 +28,9 @@ export function LandingPage() {
           <Link href="/creators" className="text-muted hover:text-ink">
             I&apos;m a creator
           </Link>
-          <Link href="/preview" className="text-muted hover:text-ink">
+          <PreviewLink href="/preview" className="text-muted hover:text-ink">
             Preview
-          </Link>
+          </PreviewLink>
           {signedIn ? (
             <Link href="/start" className="text-ink">
               Workspace
@@ -58,14 +59,12 @@ export function LandingPage() {
             <Button className="min-h-14 px-7 text-base" onClick={() => setOpen(true)}>
               Start a campaign
             </Button>
-            <div>
-              <Link
-                href="/preview"
-                className="mt-4 inline-flex min-h-11 items-center text-sm text-muted hover:text-ink"
-              >
-                Preview
-              </Link>
-            </div>
+            <PreviewLink
+              href="/preview"
+              className="mt-4 inline-flex min-h-11 items-center text-sm text-muted hover:text-ink"
+            >
+              Preview
+            </PreviewLink>
           </div>
         </div>
         <div className="mx-auto w-full max-w-[280px]">
@@ -122,12 +121,12 @@ export function LandingPage() {
         <Button className="min-h-14 w-full" onClick={() => setOpen(true)}>
           Start a campaign
         </Button>
-        <Link
+        <PreviewLink
           href="/preview"
           className="flex min-h-11 w-full items-center justify-center text-sm text-muted"
         >
           Preview
-        </Link>
+        </PreviewLink>
       </div>
 
       {open ? <GuestCampaign onClose={() => setOpen(false)} /> : null}
