@@ -16,7 +16,7 @@ Creators do not fill a business form. The name brands see is a **creator name**.
 
 1. `/creators` → Open a studio → `/register/creator`.
 2. **Account** — email + password, Google, or WhatsApp. No creator name on this screen. Copy is studio language (`you@email.com`), never `you@brand.my`.
-3. **Your card** — “What should brands call you?” Required creator name (visible label, why it exists). Optional Instagram. Required market chips: Kuala Lumpur, Penang, or both. WhatsApp does not use the phone as the name. Google may prefill a person name; they can edit it.
+3. **Your card** — “What should brands call you?” Required creator name (visible label, why it exists). Optional Instagram. Required market chips: Kuala Lumpur, Penang, or both. WhatsApp does not use the phone as the name. Google may prefill a person name; email signup does not guess a name from the address. They can edit it.
 4. Session creates the user + **creator workspace** named `{creator}'s studio`, with market stored on the workspace.
 5. Enter `/work/studio` on a blank canvas: welcome by creator name, a line that names their market, then the three intents. The first virtual KOL skips the market question if they already answered it.
 

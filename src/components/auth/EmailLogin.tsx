@@ -92,7 +92,7 @@ export function EmailLogin({
   const title =
     mode === "register"
       ? creator
-        ? "Sign in"
+        ? "Your email"
         : "Create account"
       : creator
         ? "Welcome back"
@@ -100,14 +100,15 @@ export function EmailLogin({
   const body =
     mode === "register"
       ? creator
-        ? "Email first. You'll name yourself as a creator next — not a business."
+        ? "Account first. You'll name yourself as a creator next — not a business."
         : intent === "business"
           ? "Use email. Then we'll open your business workspace."
           : "Use email. Then choose whether you are a business or a creator."
       : creator
         ? "Log in to open your studio."
         : "Use the email you registered with.";
-  const canSubmit = Boolean(email && password);
+  const canSubmit =
+    Boolean(email && password) && (mode === "login" || Boolean(confirm));
 
   return (
     <div>
@@ -122,7 +123,7 @@ export function EmailLogin({
         {title}
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
-      <form onSubmit={onSubmit} className="mt-8 space-y-3">
+      <form onSubmit={onSubmit} className={`mt-8 ${creator ? "space-y-5" : "space-y-3"}`}>
         {showName ? (
           <label className="block">
             <span className="sr-only">Name</span>
@@ -136,7 +137,9 @@ export function EmailLogin({
           </label>
         ) : null}
         <label className="block">
-          <span className="sr-only">Email</span>
+          <span className={creator ? "mb-2 block text-[13px] text-muted" : "sr-only"}>
+            Email
+          </span>
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -148,20 +151,24 @@ export function EmailLogin({
           />
         </label>
         <label className="block">
-          <span className="sr-only">Password</span>
+          <span className={creator ? "mb-2 block text-[13px] text-muted" : "sr-only"}>
+            Password
+          </span>
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             autoComplete={mode === "register" ? "new-password" : "current-password"}
-            placeholder="Password"
+            placeholder={creator ? "At least 8 characters" : "Password"}
             className={fieldClass}
           />
         </label>
         {mode === "register" ? (
           <>
             <label className="block">
-              <span className="sr-only">Confirm password</span>
+              <span className={creator ? "mb-2 block text-[13px] text-muted" : "sr-only"}>
+                Confirm password
+              </span>
               <input
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
@@ -171,7 +178,9 @@ export function EmailLogin({
                 className={fieldClass}
               />
             </label>
-            <p className="text-[13px] text-muted">At least 8 characters.</p>
+            {creator ? null : (
+              <p className="text-[13px] text-muted">At least 8 characters.</p>
+            )}
           </>
         ) : null}
         {error ? <p className="text-sm text-rose">{error}</p> : null}

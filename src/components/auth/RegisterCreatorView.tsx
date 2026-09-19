@@ -70,7 +70,7 @@ export function RegisterCreatorView({
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 py-16">
       <BrandLogo height={26} />
       {!identity ? (
         <>

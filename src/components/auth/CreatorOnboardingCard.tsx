@@ -119,7 +119,7 @@ export function CreatorOnboardingCard({
         </Button>
       </form>
       <div className="mt-8">
-        <SignOutButton />
+        <SignOutButton label="Use a different email" />
       </div>
     </>
   );

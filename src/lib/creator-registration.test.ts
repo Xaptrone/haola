@@ -50,7 +50,7 @@ test("does not suggest WhatsApp phone as a creator name", () => {
   );
 });
 
-test("suggests a Google or email name when it is usable", () => {
+test("suggests a Google person name, not an email local-part", () => {
   assert.equal(
     suggestCreatorName({
       id: "google:1",
@@ -61,11 +61,19 @@ test("suggests a Google or email name when it is usable", () => {
   );
   assert.equal(
     suggestCreatorName({
+      id: "email:aisha.card@studio.test",
+      name: "aisha card",
+      email: "aisha.card@studio.test",
+    }),
+    "",
+  );
+  assert.equal(
+    suggestCreatorName({
       id: "email:mei.lin@studio.my",
       name: "my studio",
       email: "mei.lin@studio.my",
     }),
-    "mei lin",
+    "",
   );
 });
 

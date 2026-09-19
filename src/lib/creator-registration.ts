@@ -85,12 +85,11 @@ export function suggestCreatorName(identity: {
 }) {
   if (identity.id.startsWith("wa:")) return "";
   if (identity.email.endsWith("@whatsapp.local")) return "";
-  if (isUsableCreatorName(identity.name)) {
-    return normalizeCreatorName(identity.name);
-  }
-  const fromEmail = nameFromEmail(identity.email);
-  if (isUsableCreatorName(fromEmail)) return normalizeCreatorName(fromEmail);
-  return "";
+  const name = normalizeCreatorName(identity.name);
+  if (!isUsableCreatorName(name)) return "";
+  // Email local-parts are not stage names. Only keep a real person name (Google).
+  if (name.toLowerCase() === nameFromEmail(identity.email).toLowerCase()) return "";
+  return name;
 }
 
 function asHandle(raw: string) {
