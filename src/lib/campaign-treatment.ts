@@ -23,6 +23,17 @@ export function liveMatchCopy(brand: string): { title: string; body: string } {
   };
 }
 
+export type GuestDraftStep = "idle" | "business" | "goal";
+
+/** Guest draft overlay is home-only. Continue must be able to open Create. */
+export function shouldShowGuestDraft(
+  hasDraft: boolean,
+  step: GuestDraftStep,
+  tab: string,
+): boolean {
+  return hasDraft && step === "idle" && tab === "home";
+}
+
 export function campaignTreatment(
   businessName: string,
   goal: string,

@@ -12,6 +12,7 @@ import { PRICE, businessWallet } from "@/lib/credits";
 import { rm, useMarketplace } from "@/lib/marketplace";
 import { businessNav } from "@/lib/nav";
 import { upsertBrand } from "@/lib/brands";
+import { shouldShowGuestDraft } from "@/lib/campaign-treatment";
 import { newReviewJob } from "@/lib/review";
 import { useSession } from "@/lib/session";
 import type { BusinessSeat, ReviewJob } from "@/lib/types";
@@ -24,10 +25,11 @@ export function BusinessView() {
   const { session, patchBusiness, loadPreset, ready } = useSession();
   const market = useMarketplace();
   const router = useRouter();
-  const tab = useSearchParams().get("tab") ?? "home";
-  const flowQ = useSearchParams().get("flow");
-  const jobQ = useSearchParams().get("job");
-  const previewParam = useSearchParams().get("preview") === "1";
+  const params = useSearchParams();
+  const tab = params.get("tab") ?? "home";
+  const flowQ = params.get("flow");
+  const jobQ = params.get("job");
+  const previewParam = params.get("preview") === "1";
   const preview = market.preview && previewParam;
   const ws = session.businessWorkspace;
   const [step, setStep] = useState<"idle" | "business" | "goal">(
@@ -91,7 +93,7 @@ export function BusinessView() {
 
   const needsSetup = ws.onboardingStage !== "ready" && !ws.guestDraft;
   const askingGoal = step === "goal" || (needsSetup && ws.onboardingStage === "goal");
-  const showDraft = Boolean(ws.guestDraft) && step !== "business";
+  const showDraft = shouldShowGuestDraft(Boolean(ws.guestDraft), step, tab);
   const isOwner = (ws.seat ?? "owner") === "owner";
   const brandOptions = (ws.brands ?? []).map((b) => b.name);
 
@@ -99,8 +101,11 @@ export function BusinessView() {
     if (!ws) return;
     patchBusiness({
       name,
-      onboardingStage: "goal",
+      onboardingStage: ws.guestDraft ? ws.onboardingStage : "goal",
       brands: upsertBrand(ws.brands, name),
+      guestDraft: ws.guestDraft
+        ? { ...ws.guestDraft, businessName: name }
+        : ws.guestDraft,
     });
     market.ensureParty({ id: ws.id, name, kind: "business" });
     setStep("goal");
@@ -181,7 +186,7 @@ export function BusinessView() {
 
   const body = (
     <>
-      {needsSetup && !askingGoal ? (
+      {(needsSetup && !askingGoal) || step === "business" ? (
         <PickOrCreateBusiness
           question={
             brandOptions.length
@@ -195,8 +200,19 @@ export function BusinessView() {
       {askingGoal ? (
         <ClarifyChips
           question="What should we do first?"
-          options={["Drive bookings", "Launch an offer", "A promotion", "Awareness"]}
-          onPick={() => {
+          options={
+            ws.guestDraft
+              ? ["Bookings", "A new offer", "A promotion", "Awareness"]
+              : ["Drive bookings", "Launch an offer", "A promotion", "Awareness"]
+          }
+          onPick={(goal) => {
+            if (ws.guestDraft) {
+              patchBusiness({
+                guestDraft: { ...ws.guestDraft, goal },
+              });
+              setStep("idle");
+              return;
+            }
             patchBusiness({
               onboardingStage: "ready",
               feed: [
@@ -216,6 +232,12 @@ export function BusinessView() {
       {showDraft ? (
         <div className="space-y-4">
           <h1 className="text-2xl font-medium tracking-tight">Continue your campaign</h1>
+          {isOwner && market.businessBalance(ws.id) === 0 ? (
+            <p className="text-sm text-muted">
+              Credits start at zero. Review the brief. fxgen loads credits after
+              payment.
+            </p>
+          ) : null}
           <ActionCard
             card={{
               id: "brief",
@@ -295,6 +317,7 @@ export function BusinessView() {
 
           {tab === "create" ? (
             <BusinessCreate
+              key={params.toString()}
               workspaceId={ws.id}
               workspaceName={ws.name}
               isOwner={isOwner}

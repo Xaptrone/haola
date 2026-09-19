@@ -4,6 +4,7 @@ import {
   campaignTreatment,
   displayBrandName,
   liveMatchCopy,
+  shouldShowGuestDraft,
 } from "./campaign-treatment.ts";
 
 test("displayBrandName hides placeholder names", () => {
@@ -31,4 +32,11 @@ test("live match copy never names a demo KOL", () => {
   assert.match(copy.body, /Kedai Live Test/);
   assert.doesNotMatch(copy.title, /Mei Lin|Aisha|Chef Ton/i);
   assert.doesNotMatch(copy.body, /Mei Lin|Aisha|Chef Ton/i);
+});
+
+test("guest draft overlay does not trap Continue on create", () => {
+  assert.equal(shouldShowGuestDraft(true, "idle", "home"), true);
+  assert.equal(shouldShowGuestDraft(true, "idle", "create"), false);
+  assert.equal(shouldShowGuestDraft(true, "business", "home"), false);
+  assert.equal(shouldShowGuestDraft(false, "idle", "home"), false);
 });

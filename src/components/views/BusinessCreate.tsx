@@ -158,8 +158,14 @@ export function BusinessCreate({
       priceCredits: PRICE.campaign,
       script: `Open on the brand. Soft voice. Name ${campaignBusiness} once. Close on ${campaignGoal.toLowerCase()}. Paid partnership line at end.`,
     });
+    if (!isOwner) {
+      queueSpend("campaign", job.title, job.priceCredits);
+      patchBusiness({ guestDraft: null });
+      return;
+    }
+    if (!holdJobs([job])) return;
     patchBusiness({ guestDraft: null });
-    spendOrQueue("campaign", [job], job.title);
+    router.push("/work/business?tab=content");
   }
 
   function finishIp() {
