@@ -10,6 +10,7 @@ import { KolMatchReel } from "@/components/landing/KolMatchReel";
 import {
   campaignTreatment,
   displayBrandName,
+  liveMatchCopy,
 } from "@/lib/campaign-treatment";
 import { useSession } from "@/lib/session";
 
@@ -24,6 +25,7 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
 
   const brand = displayBrandName(business);
   const treatment = campaignTreatment(business, goal);
+  const match = liveMatchCopy(business);
   const board = step >= 2;
 
   function continueSignup() {
@@ -116,17 +118,17 @@ export function GuestCampaign({ onClose }: { onClose: () => void }) {
 
         {step === 3 ? (
           <div className="grid items-center gap-8 lg:grid-cols-[240px_1fr]">
-            <KolMatchReel />
+            <KolMatchReel label={`${brand} reel`} />
             <div className="space-y-6">
               <div>
                 <p className="text-[32px] font-semibold tracking-[-0.04em] text-ink">
-                  Mei Lin
+                  {match.title}
                 </p>
                 <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                  Predicted 91
+                  Predicted · awaiting a creator
                 </p>
-                <p className="mt-4 max-w-[24ch] text-[15px] leading-6 text-muted">
-                  Premium, not shouty. Same market as {brand}.
+                <p className="mt-4 max-w-[28ch] text-[15px] leading-6 text-muted">
+                  {match.body}
                 </p>
               </div>
               <div className="flex flex-col items-start gap-3">

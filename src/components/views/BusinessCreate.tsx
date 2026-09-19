@@ -9,7 +9,8 @@ import { PRICE } from "@/lib/credits";
 import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
 import { upsertBrand } from "@/lib/brands";
-import { newReviewJob } from "@/lib/review";
+import { liveMatchCopy } from "@/lib/campaign-treatment";
+import { newReviewJob, UNASSIGNED_CREATOR, UNASSIGNED_KOL } from "@/lib/review";
 import { useSession } from "@/lib/session";
 import type { CreateIntent, ReviewJob } from "@/lib/types";
 
@@ -106,6 +107,7 @@ export function BusinessCreate({
   const [ipTone, setIpTone] = useState("");
   const [packSize, setPackSize] = useState(3);
   const [creditError, setCreditError] = useState<string | null>(null);
+  const match = liveMatchCopy(campaignBusiness);
 
   function queueSpend(kind: CreateIntent, title: string, amount: number) {
     market.addSpendRequest({
@@ -156,8 +158,14 @@ export function BusinessCreate({
       priceCredits: PRICE.campaign,
       script: `Open on the brand. Soft voice. Name ${campaignBusiness} once. Close on ${campaignGoal.toLowerCase()}. Paid partnership line at end.`,
     });
+    if (!isOwner) {
+      queueSpend("campaign", job.title, job.priceCredits);
+      patchBusiness({ guestDraft: null });
+      return;
+    }
+    if (!holdJobs([job])) return;
     patchBusiness({ guestDraft: null });
-    spendOrQueue("campaign", [job], job.title);
+    router.push("/work/business?tab=content");
   }
 
   function finishIp() {
@@ -173,8 +181,8 @@ export function BusinessCreate({
       dos: copy.dos,
       donts: copy.donts,
       sampleLines: copy.sampleLines,
-      creatorName: "Aisha",
-      kolName: "Mei Lin",
+      creatorName: UNASSIGNED_CREATOR,
+      kolName: UNASSIGNED_KOL,
     };
     const job = newReviewJob({
       title: `Brand IP · ${campaignBusiness || workspaceName}`,
@@ -289,7 +297,10 @@ export function BusinessCreate({
                 { label: "Hold", value: rm(PRICE.campaign), provenance: "verified" },
               ],
               actions: [
-                { id: "accept", label: isOwner ? "Accept" : "Submit to owner" },
+                {
+                  id: "accept",
+                  label: isOwner ? "Accept" : "Submit to owner",
+                },
                 { id: "edit", label: "Edit", variant: "ghost" },
               ],
             }}
@@ -302,24 +313,13 @@ export function BusinessCreate({
             card={{
               id: "kol",
               kind: "kol",
-              title: "Recommended KOL · Mei Lin",
+              title: match.title,
               provenance: "predicted",
-              score: { value: 91, label: "Match to this brief" },
-              factors: [
-                { label: "Market", value: "KL / Penang" },
-                { label: "Tone", value: "Premium, not shouty" },
-                { label: "Language", value: "EN + 中文" },
+              body: match.body,
+              rows: [
+                { label: "KOL", value: UNASSIGNED_KOL, provenance: "predicted" },
               ],
-              actions: [
-                {
-                  id: "accept",
-                  label: isOwner ? "Accept match" : "Submit to owner",
-                },
-                { id: "compare", label: "Compare", variant: "ghost" },
-              ],
-            }}
-            onAction={(actionId) => {
-              if (actionId === "accept") finishCampaign();
+              actions: [],
             }}
           />
         </div>
@@ -352,7 +352,6 @@ export function BusinessCreate({
               { label: "Sample", value: ipCopy(ipTone).sampleLines[0], provenance: "ai" },
               { label: "Hold", value: rm(PRICE.brandIp), provenance: "verified" },
             ],
-            score: { value: 78, label: "Avatar Market-Fit" },
             actions: [
               {
                 id: "accept",
@@ -415,7 +414,7 @@ export function BusinessCreate({
             kind: "payment",
             title: "Need credits",
             provenance: "verified",
-            body: creditError,
+            body: `${creditError} Ask fxgen to load credits after payment.`,
             actions: [{ id: "ok", label: "Got it" }],
           }}
           onAction={() => setCreditError(null)}

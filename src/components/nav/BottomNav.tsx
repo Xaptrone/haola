@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { NavIcon, type NavIconName } from "@/components/nav/NavIcons";
+import { previewSurfacesEnabled } from "@/lib/preview";
 
 export type NavItem = {
   href: string;
@@ -15,13 +16,15 @@ export type NavItem = {
 
 function hrefWithPreview(href: string, params: URLSearchParams) {
   const next = new URL(href, "https://fxgen.local");
-  const preview = params.get("preview");
-  const as = params.get("as");
-  if (preview && !next.searchParams.has("preview")) {
-    next.searchParams.set("preview", preview);
-  }
-  if (as && next.pathname.startsWith("/work/studio") && !next.searchParams.has("as")) {
-    next.searchParams.set("as", as);
+  if (previewSurfacesEnabled()) {
+    const preview = params.get("preview");
+    const as = params.get("as");
+    if (preview && !next.searchParams.has("preview")) {
+      next.searchParams.set("preview", preview);
+    }
+    if (as && next.pathname.startsWith("/work/studio") && !next.searchParams.has("as")) {
+      next.searchParams.set("as", as);
+    }
   }
   return `${next.pathname}${next.search}`;
 }

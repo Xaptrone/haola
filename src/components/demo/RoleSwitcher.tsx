@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession, type DemoPreset } from "@/lib/session";
+import { previewSurfacesEnabled } from "@/lib/preview";
 
 const presets: { id: DemoPreset; label: string; href: string }[] = [
   { id: "guest", label: "Landing", href: "/?preview=1" },
@@ -41,9 +42,12 @@ function PreviewMenuInner({
 }) {
   const { loadPreset, session } = useSession();
   const router = useRouter();
-  const preview = useSearchParams().get("preview") === "1";
+  const previewParam = useSearchParams().get("preview") === "1";
+  const enabled = previewSurfacesEnabled();
+  const preview = enabled && previewParam;
   const [open, setOpen] = useState(false);
 
+  if (!enabled) return null;
   if (!always && !preview) return null;
 
   const listClass =

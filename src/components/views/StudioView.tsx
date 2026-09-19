@@ -8,14 +8,18 @@ import { PhoneFrame } from "@/components/shells/PhoneFrame";
 import { MobileAppShell, StudioShell } from "@/components/shells/WorkShells";
 import { ActionCard, type ActionCardModel } from "@/components/ui/ActionCard";
 import { ClarifyChips } from "@/components/ui/ClarifyChips";
+import { NamePrompt } from "@/components/ui/NamePrompt";
 import { ReviewPipeline } from "@/components/review/ReviewPipeline";
 import { NeedWorkspace } from "@/components/auth/NeedWorkspace";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { creatorNav } from "@/lib/nav";
 import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
+import { isUnassignedCreator, UNASSIGNED_KOL } from "@/lib/review";
+import { kolProposal } from "@/lib/kol-proposal";
 import { useSession } from "@/lib/session";
 import { useDesktop } from "@/lib/use-desktop";
+import type { ReviewJob } from "@/lib/types";
 
 export function StudioView() {
   const { session, patchCreator, loadPreset, ready } = useSession();
@@ -24,10 +28,17 @@ export function StudioView() {
   const tab = useSearchParams().get("tab") ?? "home";
   const jobQ = useSearchParams().get("job");
   const as = useSearchParams().get("as");
-  const preview = useSearchParams().get("preview") === "1";
+  const previewParam = useSearchParams().get("preview") === "1";
+  const preview = market.preview && previewParam;
   const ws = session.creatorWorkspace;
-  const [flow, setFlow] = useState<"idle" | "market" | "audience" | "done">("idle");
-  const [answers, setAnswers] = useState({ market: "", audience: "" });
+  const [flow, setFlow] = useState<
+    "idle" | "market" | "audience" | "name" | "done"
+  >("idle");
+  const [answers, setAnswers] = useState({
+    market: "",
+    audience: "",
+    name: "",
+  });
   const [deskMode, setDeskMode] = useState<"phone" | "canvas">(
     preview ? "phone" : "canvas",
   );
@@ -38,41 +49,58 @@ export function StudioView() {
     if (as === "new") loadPreset("creator-new");
   }, [ready, as, preview, loadPreset]);
 
+  useEffect(() => {
+    if (!ws) return;
+    market.ensureParty({
+      id: ws.id,
+      name: session.displayName,
+      kind: "creator",
+    });
+  }, [ws, session.displayName, market]);
+
   const myJobs = useMemo(
     () =>
       market.reviews.filter((j) => j.creatorName === session.displayName),
     [market.reviews, session.displayName],
   );
+  const openMatches = useMemo(
+    () => market.reviews.filter((j) => isUnassignedCreator(j.creatorName)),
+    [market.reviews],
+  );
   const waitingMine = myJobs.filter((j) => j.waitingOn === "creator");
   const selected = myJobs.find((j) => j.id === jobQ) ?? null;
   const lockedIp = market.ipJobs.find((j) => j.status === "handed_off") ?? null;
 
-  const kolCard: ActionCardModel = useMemo(
-    () => ({
+  const kolCard: ActionCardModel = useMemo(() => {
+    const proposal = kolProposal(answers);
+    return {
       id: "avatar",
       kind: "avatar",
-      title: "Avatar proposal · Mei Lin",
+      title: proposal.name
+        ? `Avatar proposal · ${proposal.name}`
+        : "Avatar proposal",
       provenance: "ai",
-      body: "Warm, precise, never shouty. Speaks to 25–34 people who care how a brand feels.",
+      body: proposal.personality,
       rows: [
-        { label: "Market", value: answers.market || "Penang & KL", provenance: "user" },
-        { label: "Audience", value: answers.audience || "Brand explorers", provenance: "user" },
-        { label: "Voice", value: "EN / 中文 · low-key", provenance: "ai" },
+        { label: "Market", value: proposal.market || "To confirm", provenance: "user" },
+        {
+          label: "Audience",
+          value: proposal.audience || "To confirm",
+          provenance: "user",
+        },
+        { label: "Voice", value: `${proposal.language} · low-key`, provenance: "ai" },
       ],
-      score: { value: 82, label: "Avatar Market-Fit" },
       factors: [
-        { label: "Market whitespace", value: "Premium SMEs, not shouty ads" },
-        { label: "Language pair", value: "Matches KL + Penang" },
-        { label: "Distinctiveness", value: "Clear vs existing KOLs" },
+        { label: "Market", value: proposal.market || "Asked, then locked" },
+        { label: "Audience", value: proposal.audience || "Asked, then locked" },
+        { label: "Language pair", value: proposal.language },
       ],
       actions: [
         { id: "accept", label: "Accept" },
         { id: "edit", label: "Edit", variant: "ghost" },
-        { id: "regen", label: "Regenerate", variant: "quiet" },
       ],
-    }),
-    [answers],
-  );
+    };
+  }, [answers]);
 
   if (!ready) {
     return (
@@ -132,31 +160,54 @@ export function StudioView() {
   }
 
   function acceptKol() {
+    const next = kolProposal(answers);
+    if (!next.name) return;
     patchCreator({
       canvasIntent: null,
       kols: [
         {
           id: uid("kol"),
-          name: "Mei Lin",
-          market: answers.market,
-          audience: answers.audience,
-          categories: "Lifestyle, services, F&B",
-          language: "EN / 中文",
-          personality: "Warm, precise",
-          amf: 82,
+          name: next.name,
+          market: next.market,
+          audience: next.audience,
+          categories: next.categories,
+          language: next.language,
+          personality: next.personality,
+          amf: 0,
         },
       ],
       feed: [
         {
           id: "amf",
-          title: "Mei Lin has an AMF of 82",
-          detail: "Predicted · inspect factors",
+          title: `${next.name} is on the board`,
+          detail: "Predicted AMF lands after the first live campaign",
           href: "/work/studio?tab=kols",
           tone: "info",
         },
       ],
     });
     setFlow("idle");
+  }
+
+  function claimJob(job: ReviewJob) {
+    if (!ws) return;
+    const kol = ws.kols[0]?.name ?? UNASSIGNED_KOL;
+    market.patchReview(job.id, {
+      ...job,
+      creatorName: session.displayName,
+      kolName: kol,
+      adminLog: [
+        {
+          id: uid("log"),
+          text:
+            kol === UNASSIGNED_KOL
+              ? `${session.displayName} accepted this match.`
+              : `${session.displayName} accepted this match · KOL ${kol}.`,
+          at: "Just now",
+        },
+        ...job.adminLog,
+      ],
+    });
   }
 
   const board = (
@@ -202,6 +253,19 @@ export function StudioView() {
             ]}
             onPick={(v) => {
               setAnswers((a) => ({ ...a, audience: v }));
+              setFlow("name");
+            }}
+          />
+        </div>
+      ) : null}
+      {flow === "name" ? (
+        <div className="mx-auto max-w-md">
+          <NamePrompt
+            question="What should this KOL be called?"
+            placeholder="KOL name"
+            fieldLabel="KOL name"
+            onSubmit={(name) => {
+              setAnswers((a) => ({ ...a, name }));
               setFlow("done");
             }}
           />
@@ -213,11 +277,12 @@ export function StudioView() {
             card={kolCard}
             onAction={(id) => {
               if (id === "accept") acceptKol();
+              if (id === "edit") setFlow("name");
             }}
           />
         </div>
       ) : null}
-      {!selected && !creating && ws.kols.length && flow === "idle" ? (
+      {!selected && !creating && flow === "idle" && (ws.kols.length || tab === "campaigns" || tab === "profile") ? (
         <div className="mx-auto max-w-md space-y-6">
           {tab === "home" ? (
             <>
@@ -240,6 +305,17 @@ export function StudioView() {
                   }))}
                 />
               ) : null}
+              {openMatches.length ? (
+                <ActionFeed
+                  items={openMatches.map((j) => ({
+                    id: `open-${j.id}`,
+                    title: `Open match · ${j.businessName}`,
+                    detail: j.title,
+                    href: `/work/studio?tab=campaigns`,
+                    tone: "action" as const,
+                  }))}
+                />
+              ) : null}
               <ActionFeed items={ws.feed} />
             </>
           ) : null}
@@ -257,6 +333,26 @@ export function StudioView() {
                     actions: [],
                   }}
                 />
+              ) : null}
+              {openMatches.length ? (
+                <div className="space-y-3">
+                  {openMatches.map((job) => (
+                    <ActionCard
+                      key={job.id}
+                      card={{
+                        id: job.id,
+                        kind: "kol",
+                        title: `Open match · ${job.businessName}`,
+                        provenance: "predicted",
+                        body: job.title,
+                        actions: [{ id: "accept", label: "Accept match" }],
+                      }}
+                      onAction={(id) => {
+                        if (id === "accept") claimJob(job);
+                      }}
+                    />
+                  ))}
+                </div>
               ) : null}
               {myJobs.length ? (
                 <ActionFeed
@@ -276,22 +372,36 @@ export function StudioView() {
                     provenance: "predicted",
                     score: { value: 91, label: "Campaign match" },
                     body: "Accept, compare, or skip. This is predicted, not a booking.",
-                    actions: [
-                      { id: "accept", label: "Accept campaign" },
-                      { id: "compare", label: "Compare", variant: "ghost" },
-                    ],
+                    actions: [{ id: "accept", label: "Accept campaign" }],
                   }}
                 />
-              ) : (
+              ) : openMatches.length ? null : (
                 <p className="text-sm text-muted">No campaigns yet. Matches land here.</p>
               )}
             </div>
           ) : null}
-          {tab === "kols" ? (
+          {tab === "kols" && ws.kols[0] ? (
             <ActionCard
               card={{
-                ...kolCard,
-                title: `${ws.kols[0].name} · AMF ${ws.kols[0].amf}`,
+                id: "avatar",
+                kind: "avatar",
+                title: ws.kols[0].amf
+                  ? `${ws.kols[0].name} · AMF ${ws.kols[0].amf}`
+                  : ws.kols[0].name,
+                provenance: ws.kols[0].amf ? "predicted" : "user",
+                body: ws.kols[0].personality,
+                rows: [
+                  { label: "Market", value: ws.kols[0].market, provenance: "user" },
+                  { label: "Audience", value: ws.kols[0].audience, provenance: "user" },
+                  {
+                    label: "Voice",
+                    value: ws.kols[0].language,
+                    provenance: "user",
+                  },
+                ],
+                score: ws.kols[0].amf
+                  ? { value: ws.kols[0].amf, label: "Avatar Market-Fit" }
+                  : undefined,
                 actions: [{ id: "inspect", label: "Inspect factors" }],
               }}
             />
@@ -302,10 +412,10 @@ export function StudioView() {
                 card={{
                   id: "pay",
                   kind: "payment",
-                  title: `${rm(market.creatorBalance())} pending`,
+                  title: `${rm(market.creatorBalance(ws.id))} pending`,
                   provenance: "verified",
                   body: "Released after final approve. Payout rail is not live yet.",
-                  actions: [{ id: "payout", label: "Request payout" }],
+                  actions: [],
                 }}
               />
               <SignOutButton />
@@ -381,11 +491,7 @@ export function StudioView() {
         <StudioShell
           name={ws.name}
           actions={preview ? modeToggle : undefined}
-          composer={
-            <p className="text-center text-sm text-muted">
-              Composer stays here. Cards land on the canvas — not in a chat drawer.
-            </p>
-          }
+          composer={undefined}
         >
           <div className="flex min-h-full items-center justify-center px-8 py-12">
             {board}

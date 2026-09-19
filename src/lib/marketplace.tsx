@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -21,10 +22,14 @@ import {
 } from "@/lib/credits";
 import { uid } from "@/lib/ids";
 import {
-  AISHA_CREATOR_ID,
-  ASIAM_BUSINESS_ID,
-  seedReviews,
-} from "@/lib/review";
+  demoMarketplace,
+  emptyMarketplace,
+  LIVE_MARKET_KEY,
+  parseMarketplaceState,
+  PREVIEW_MARKET_KEY,
+  type MarketplaceState,
+} from "@/lib/marketplace-state";
+import { activePreviewPreset } from "@/lib/preview";
 import type {
   BrandIpJob,
   LedgerEntry,
@@ -33,49 +38,12 @@ import type {
   SpendRequest,
 } from "@/lib/types";
 
-const STORAGE_KEY = "fxgen.marketplace.v1";
-const CREATOR_ID = AISHA_CREATOR_ID;
-
-type MarketplaceState = {
-  reviews: ReviewJob[];
-  ipJobs: BrandIpJob[];
-  spendRequests: SpendRequest[];
-  ledger: LedgerEntry[];
-  parties: MarketplaceParty[];
-};
-
-function seedState(): MarketplaceState {
-  const reviews = seedReviews();
-  let ledger: LedgerEntry[] = [];
-  const top = adminTopup(ledger, {
-    businessId: ASIAM_BUSINESS_ID,
-    amount: 5000,
-    actor: "Nadia",
-    note: "Opening balance",
-    idempotencyKey: "topup:seed:bws-asiam",
-  });
-  ledger = top.entries;
-  for (const job of reviews) {
-    const held = holdForJob(ledger, job, "system");
-    if (held.ok) ledger = held.entries;
-  }
-  return {
-    reviews,
-    ipJobs: [],
-    spendRequests: [],
-    ledger,
-    parties: [
-      { id: ASIAM_BUSINESS_ID, name: "As I Am by Chef Ton", kind: "business" },
-      { id: AISHA_CREATOR_ID, name: "Aisha", kind: "creator" },
-    ],
-  };
-}
-
 type SpendOk = { ok: true };
 type SpendFail = { ok: false; error: string };
 
 type MarketplaceApi = {
   ready: boolean;
+  preview: boolean;
   reviews: ReviewJob[];
   ipJobs: BrandIpJob[];
   spendRequests: SpendRequest[];
@@ -88,6 +56,8 @@ type MarketplaceApi = {
   addSpendRequest: (req: SpendRequest) => void;
   removeSpendRequest: (id: string) => void;
   ensureParty: (party: MarketplaceParty) => void;
+  ensureDemo: () => void;
+  ensureLive: () => void;
   topup: (input: {
     businessId: string;
     amount: number;
@@ -98,44 +68,64 @@ type MarketplaceApi = {
   releaseJob: (job: ReviewJob, actor: string) => LedgerResult;
   refundJob: (job: ReviewJob, actor: string) => LedgerResult;
   businessBalance: (businessId: string) => number;
-  creatorBalance: (creatorId?: string) => number;
+  creatorBalance: (creatorId: string) => number;
   createHeldJob: (job: ReviewJob, actor: string) => SpendOk | SpendFail;
   createHeldJobs: (jobs: ReviewJob[], actor: string) => SpendOk | SpendFail;
 };
 
 const MarketplaceContext = createContext<MarketplaceApi | null>(null);
 
-export function MarketplaceProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<MarketplaceState>(seedState);
-  const [ready, setReady] = useState(false);
+function readStore(key: string, fallback: MarketplaceState): MarketplaceState {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return parseMarketplaceState(raw, fallback);
+  } catch {
+    return fallback;
+  }
+}
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as MarketplaceState;
-        if (parsed.reviews && parsed.ledger) {
-          // Restore persisted ledger/jobs after mount (SSR-safe).
-          // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage rehydrate
-          setState({
-            reviews: parsed.reviews,
-            ipJobs: parsed.ipJobs ?? [],
-            spendRequests: parsed.spendRequests ?? [],
-            ledger: parsed.ledger,
-            parties: parsed.parties ?? seedState().parties,
-          });
-        }
-      }
-    } catch {
-      /* ignore */
+export function MarketplaceProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = useState<MarketplaceState>(emptyMarketplace);
+  const [ready, setReady] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const previewRef = useRef(false);
+
+  const hydrate = useCallback((nextPreview: boolean) => {
+    previewRef.current = nextPreview;
+    setPreview(nextPreview);
+    if (nextPreview) {
+      setState(readStore(PREVIEW_MARKET_KEY, demoMarketplace()));
+    } else {
+      setState(readStore(LIVE_MARKET_KEY, emptyMarketplace()));
     }
     setReady(true);
   }, []);
 
   useEffect(() => {
+    const preset = activePreviewPreset(
+      window.location.pathname,
+      window.location.search,
+    );
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage hydrate
+    hydrate(Boolean(preset));
+  }, [hydrate]);
+
+  useEffect(() => {
     if (!ready) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, ready]);
+    const key = preview ? PREVIEW_MARKET_KEY : LIVE_MARKET_KEY;
+    localStorage.setItem(key, JSON.stringify(state));
+  }, [state, ready, preview]);
+
+  const ensureDemo = useCallback(() => {
+    if (previewRef.current) return;
+    hydrate(true);
+  }, [hydrate]);
+
+  const ensureLive = useCallback(() => {
+    if (!previewRef.current) return;
+    hydrate(false);
+  }, [hydrate]);
 
   const upsertReview = useCallback((job: ReviewJob) => {
     setState((s) => ({
@@ -207,11 +197,16 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
   const releaseJob = useCallback<MarketplaceApi["releaseJob"]>((job, actor) => {
     let result: LedgerResult = { ok: false, entries: [], error: "Not ready" };
     setState((s) => {
-      result = releaseHold(
-        s.ledger,
-        { ...job, creatorId: CREATOR_ID },
-        actor,
+      const party = s.parties.find(
+        (p) => p.kind === "creator" && p.name === job.creatorName,
       );
+      result = party
+        ? releaseHold(s.ledger, { ...job, creatorId: party.id }, actor)
+        : {
+            ok: false,
+            entries: s.ledger,
+            error: "No creator party to release to.",
+          };
       if (!result.ok) return s;
       return { ...s, ledger: result.entries };
     });
@@ -262,6 +257,7 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
   const value = useMemo<MarketplaceApi>(
     () => ({
       ready,
+      preview,
       reviews: state.reviews,
       ipJobs: state.ipJobs,
       spendRequests: state.spendRequests,
@@ -274,19 +270,22 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
       addSpendRequest,
       removeSpendRequest,
       ensureParty,
+      ensureDemo,
+      ensureLive,
       topup,
       holdJob,
       releaseJob,
       refundJob,
       businessBalance: (businessId: string) =>
         balanceOf(state.ledger, businessWallet(businessId)),
-      creatorBalance: (creatorId = CREATOR_ID) =>
+      creatorBalance: (creatorId: string) =>
         balanceOf(state.ledger, creatorWallet(creatorId)),
       createHeldJob,
       createHeldJobs,
     }),
     [
       ready,
+      preview,
       state,
       upsertReview,
       patchReview,
@@ -295,6 +294,8 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
       addSpendRequest,
       removeSpendRequest,
       ensureParty,
+      ensureDemo,
+      ensureLive,
       topup,
       holdJob,
       releaseJob,

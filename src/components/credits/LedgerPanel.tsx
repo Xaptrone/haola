@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { rm, reasonLabel, walletLabel } from "@/lib/credits";
 import { useMarketplace } from "@/lib/marketplace";
+import { useSession } from "@/lib/session";
 import type { LedgerEntry } from "@/lib/types";
 
 export function LedgerList({
@@ -35,6 +36,7 @@ export function LedgerList({
 
 export function AdminTopup() {
   const { parties, topup } = useMarketplace();
+  const { session } = useSession();
   const businesses = parties.filter((p) => p.kind === "business");
   const [businessId, setBusinessId] = useState(businesses[0]?.id ?? "");
   const [amount, setAmount] = useState("1000");
@@ -42,6 +44,7 @@ export function AdminTopup() {
   const [message, setMessage] = useState<string | null>(null);
 
   const selected = businessId || businesses[0]?.id || "";
+  const actor = session.displayName || "Manager";
 
   return (
     <div className="space-y-4">
@@ -50,6 +53,9 @@ export function AdminTopup() {
       </p>
       <p className="text-sm text-muted">
         Credits mint from clearing after you confirm payment. 1 credit = RM 1.00.
+        {businesses.length
+          ? ""
+          : " Businesses appear here after they set up a workspace."}
       </p>
       <label className="block text-sm text-muted">
         Business
@@ -57,12 +63,17 @@ export function AdminTopup() {
           value={selected}
           onChange={(e) => setBusinessId(e.target.value)}
           className="mt-2 min-h-14 w-full rounded-[14px] border border-line bg-surface px-4 text-ink outline-none"
+          disabled={!businesses.length}
         >
-          {businesses.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
+          {businesses.length ? (
+            businesses.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))
+          ) : (
+            <option value="">No businesses yet</option>
+          )}
         </select>
       </label>
       <input
@@ -89,7 +100,7 @@ export function AdminTopup() {
           const result = topup({
             businessId: selected,
             amount: n,
-            actor: "Nadia",
+            actor,
             note,
           });
           if (!result.ok) {

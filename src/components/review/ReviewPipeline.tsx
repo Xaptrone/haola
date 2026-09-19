@@ -4,13 +4,16 @@ import { Button } from "@/components/ui/Button";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { VerticalVideo } from "@/components/ui/VerticalVideo";
 import { useDesktop } from "@/lib/use-desktop";
+import { useMarketplace } from "@/lib/marketplace";
 import {
   applyAdminDecision,
   applyBusinessDecision,
   applyCreatorAdvance,
   canBusinessRevise,
+  isUnassignedCreator,
   linkCreator,
   PIPELINE_STEPS,
+  UNASSIGNED_KOL,
   waitingLabel,
   waitingTone,
 } from "@/lib/review";
@@ -28,6 +31,8 @@ export function ReviewPipeline({
   onFinalApprove?: (next: ReviewJob) => void;
 }) {
   const desktop = useDesktop();
+  const { parties } = useMarketplace();
+  const creators = parties.filter((p) => p.kind === "creator");
   const showVideo = job.step === "rough" || job.step === "edited";
   const caption =
     job.step === "edited" ? job.editedCaption : job.roughCaption;
@@ -53,8 +58,10 @@ export function ReviewPipeline({
             {waitingLabel(job.waitingOn)}
           </StatusChip>
           <p className="text-xs text-muted">
-            {job.creatorName} · {job.kolName} · {job.revisionsUsed}/{job.maxRevisions}{" "}
-            revisions
+            {isUnassignedCreator(job.creatorName)
+              ? UNASSIGNED_KOL
+              : `${job.creatorName} · ${job.kolName}`}{" "}
+            · {job.revisionsUsed}/{job.maxRevisions} revisions
           </p>
         </div>
       </header>
@@ -101,14 +108,23 @@ export function ReviewPipeline({
       {actor === "admin" ? (
         <div className="space-y-2">
           <p className="text-sm text-muted">Link creator</p>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => onChange(linkCreator(job, "Aisha", "Mei Lin"))}
-            >
-              Aisha · Mei Lin
-            </Button>
-          </div>
+          {creators.length ? (
+            <div className="flex flex-wrap gap-2">
+              {creators.map((creator) => (
+                <Button
+                  key={creator.id}
+                  variant="ghost"
+                  onClick={() =>
+                    onChange(linkCreator(job, creator.name, UNASSIGNED_KOL))
+                  }
+                >
+                  {creator.name}
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">No creators to link yet.</p>
+          )}
         </div>
       ) : null}
 

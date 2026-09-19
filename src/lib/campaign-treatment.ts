@@ -15,6 +15,25 @@ export function displayBrandName(name: string): string {
   return trimmed;
 }
 
+/** Live guest/create copy. Never names a demo KOL as the match. */
+export function liveMatchCopy(brand: string): { title: string; body: string } {
+  return {
+    title: "We'll match a virtual KOL",
+    body: `Predicted fit after a creator claims this. Same market as ${displayBrandName(brand)}.`,
+  };
+}
+
+export type GuestDraftStep = "idle" | "business" | "goal";
+
+/** Guest draft overlay is home-only. Continue must be able to open Create. */
+export function shouldShowGuestDraft(
+  hasDraft: boolean,
+  step: GuestDraftStep,
+  tab: string,
+): boolean {
+  return hasDraft && step === "idle" && tab === "home";
+}
+
 export function campaignTreatment(
   businessName: string,
   goal: string,

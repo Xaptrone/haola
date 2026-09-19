@@ -15,8 +15,9 @@ import type {
   CreatorWorkspace,
   Session,
 } from "./types";
-import { previewPresetFromLocation, type DemoPreset } from "./preview";
+import { activePreviewPreset, type DemoPreset } from "./preview";
 import { ASIAM_BUSINESS_ID, AISHA_CREATOR_ID } from "./review";
+import { useMarketplace } from "./marketplace";
 
 const GUEST_KEY = "fxgen.guest.v1";
 
@@ -292,12 +293,13 @@ export function SessionProvider({
   identity: AuthIdentity | null;
   authReady: boolean;
 }) {
+  const { ensureDemo, ensureLive } = useMarketplace();
   const [session, setSession] = useState<Session>(emptySession);
   const [guestDraft, setGuestDraft] = useState<CampaignDraft | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const preset = previewPresetFromLocation(
+    const preset = activePreviewPreset(
       window.location.pathname,
       window.location.search,
     );
@@ -309,10 +311,12 @@ export function SessionProvider({
         setGuestDraft(JSON.parse(guestRaw) as CampaignDraft);
       }
       if (preset) {
+        ensureDemo();
         const next = sessionFromPreset(preset);
         setSession(next.session);
         setGuestDraft(next.guestDraft);
       } else if (identity) {
+        ensureLive();
         const raw = localStorage.getItem(workspaceKey(identity.id));
         if (raw) {
           const parsed = JSON.parse(raw) as Session;
@@ -336,13 +340,14 @@ export function SessionProvider({
           });
         }
       } else {
+        ensureLive();
         setSession(emptySession());
       }
     } catch {
       /* ignore */
     }
     setReady(true);
-  }, [authReady, identity]);
+  }, [authReady, identity, ensureDemo, ensureLive]);
 
   useEffect(() => {
     if (!ready) return;
@@ -407,10 +412,11 @@ export function SessionProvider({
   }, [identity]);
 
   const loadPreset = useCallback((id: DemoPreset) => {
+    ensureDemo();
     const next = sessionFromPreset(id);
     setGuestDraft(next.guestDraft);
     setSession(next.session);
-  }, []);
+  }, [ensureDemo]);
 
   const value = useMemo<SessionApi>(
     () => ({

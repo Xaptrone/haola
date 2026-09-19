@@ -63,7 +63,7 @@ export function StudioShell({
         <div className="flex items-center gap-6">
           {actions}
           <PreviewMenu />
-          <Link href="/oversight/creator" className="text-sm text-muted hover:text-ink">
+          <Link href="/work/studio?tab=profile" className="text-sm text-muted hover:text-ink">
             Performance
           </Link>
           <SignOutButton />
@@ -94,7 +94,7 @@ export function CommandShell({
         </p>
         <div className="flex items-center gap-6">
           <PreviewMenu />
-          <Link href="/oversight/business" className="text-sm text-muted hover:text-ink">
+          <Link href="/work/business?tab=business" className="text-sm text-muted hover:text-ink">
             Performance
           </Link>
           <SignOutButton />

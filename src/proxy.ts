@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { previewSurfacesEnabled } from "@/lib/preview";
 
 function hasSession(request: NextRequest) {
   return [
@@ -12,7 +13,9 @@ function hasSession(request: NextRequest) {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const preview = request.nextUrl.searchParams.get("preview") === "1";
+  const preview =
+    previewSurfacesEnabled() &&
+    request.nextUrl.searchParams.get("preview") === "1";
   const guarded =
     pathname.startsWith("/work") || pathname.startsWith("/oversight");
   if (!guarded || preview || hasSession(request)) {

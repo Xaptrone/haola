@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "@/lib/session";
+import { previewSurfacesEnabled } from "@/lib/preview";
 
 export function SignOutButton({ className = "" }: { className?: string }) {
   return (
@@ -16,7 +17,8 @@ export function SignOutButton({ className = "" }: { className?: string }) {
 
 function SignOutButtonInner({ className = "" }: { className?: string }) {
   const { logout } = useSession();
-  const preview = useSearchParams().get("preview") === "1";
+  const previewParam = useSearchParams().get("preview") === "1";
+  const preview = previewSurfacesEnabled() && previewParam;
 
   if (preview) {
     return (
