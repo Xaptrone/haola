@@ -18,7 +18,7 @@ export function ClarifyChips({
             key={opt}
             type="button"
             onClick={() => onPick(opt)}
-            className="min-h-12 rounded-[14px] border border-line bg-elevated px-4 text-left text-[15px] text-ink transition-colors duration-150 hover:border-accent/40"
+            className="min-h-12 rounded-[14px] border border-line bg-elevated px-4 text-left text-[15px] text-ink transition-[border-color,transform] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:border-accent/40 active:scale-[0.97]"
           >
             {opt}
           </button>

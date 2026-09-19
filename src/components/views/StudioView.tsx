@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BlankCanvas } from "@/components/ai/BlankCanvas";
+import { KolLookRow } from "@/components/ai/KolLookRow";
 import { ActionFeed } from "@/components/feed/ActionFeed";
 import { PhoneFrame } from "@/components/shells/PhoneFrame";
 import { MobileAppShell, StudioShell } from "@/components/shells/WorkShells";
@@ -13,21 +14,67 @@ import { NeedWorkspace } from "@/components/auth/NeedWorkspace";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { creatorNav } from "@/lib/nav";
 import { uid } from "@/lib/ids";
+import {
+  appendKol,
+  KOL_LOOKS,
+  kolFromProposal,
+  lookById,
+  namesInWorld,
+  proposeKol,
+} from "@/lib/kol-identity";
 import { rm, useMarketplace } from "@/lib/marketplace";
 import { useSession } from "@/lib/session";
+import type { Kol } from "@/lib/types";
 import { useDesktop } from "@/lib/use-desktop";
+
+type CastFlow = "idle" | "look" | "tribe" | "proposal" | "accepted";
+
+function studioHref(tab: string, search: string) {
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  params.set("tab", tab);
+  const query = params.toString();
+  return query ? `/work/studio?${query}` : "/work/studio";
+}
+
+function rosterCard(kol: Kol): ActionCardModel {
+  return {
+    id: kol.id,
+    kind: "avatar",
+    title: kol.name,
+    provenance: "user",
+    body: `${kol.categories} · ${kol.audience}`,
+    rows: [
+      { label: "World", value: kol.categories, provenance: "user" },
+      { label: "Speaks to", value: kol.audience, provenance: "user" },
+      { label: "Voice", value: kol.personality, provenance: "ai" },
+      { label: "Language", value: kol.language, provenance: "ai" },
+      { label: "Based in", value: kol.market, provenance: "ai" },
+    ],
+    score: { value: kol.amf, label: "Niche fit" },
+    factors: [
+      { label: "World", value: kol.categories },
+      { label: "Comments", value: kol.audience },
+      { label: "Voice", value: `${kol.personality} · ${kol.language}` },
+    ],
+    actions: [],
+  };
+}
 
 export function StudioView() {
   const { session, patchCreator, loadPreset, ready } = useSession();
   const market = useMarketplace();
   const desktop = useDesktop();
-  const tab = useSearchParams().get("tab") ?? "home";
-  const jobQ = useSearchParams().get("job");
-  const as = useSearchParams().get("as");
-  const preview = useSearchParams().get("preview") === "1";
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab") ?? "home";
+  const jobQ = searchParams.get("job");
+  const as = searchParams.get("as");
+  const preview = searchParams.get("preview") === "1";
   const ws = session.creatorWorkspace;
-  const [flow, setFlow] = useState<"idle" | "market" | "audience" | "done">("idle");
-  const [answers, setAnswers] = useState({ market: "", audience: "" });
+  const [flow, setFlow] = useState<CastFlow>("idle");
+  const [lookId, setLookId] = useState<string | null>(null);
+  const [tribe, setTribe] = useState("");
+  const [regen, setRegen] = useState(0);
   const [deskMode, setDeskMode] = useState<"phone" | "canvas">(
     preview ? "phone" : "canvas",
   );
@@ -38,6 +85,12 @@ export function StudioView() {
     if (as === "new") loadPreset("creator-new");
   }, [ready, as, preview, loadPreset]);
 
+  useEffect(() => {
+    if (tab === "kols" || tab === "campaigns" || tab === "profile") {
+      setFlow("idle");
+    }
+  }, [tab]);
+
   const myJobs = useMemo(
     () =>
       market.reviews.filter((j) => j.creatorName === session.displayName),
@@ -46,33 +99,40 @@ export function StudioView() {
   const waitingMine = myJobs.filter((j) => j.waitingOn === "creator");
   const selected = myJobs.find((j) => j.id === jobQ) ?? null;
   const lockedIp = market.ipJobs.find((j) => j.status === "handed_off") ?? null;
+  const look = lookId ? lookById(lookId) : null;
+  const proposal =
+    lookId && tribe ? proposeKol({ lookId, tribe, regen }) : null;
+  const takenNames = look ? namesInWorld(ws?.kols ?? [], look.world) : [];
 
-  const kolCard: ActionCardModel = useMemo(
-    () => ({
-      id: "avatar",
-      kind: "avatar",
-      title: "Avatar proposal · Mei Lin",
-      provenance: "ai",
-      body: "Warm, precise, never shouty. Speaks to 25–34 people who care how a brand feels.",
-      rows: [
-        { label: "Market", value: answers.market || "Penang & KL", provenance: "user" },
-        { label: "Audience", value: answers.audience || "Brand explorers", provenance: "user" },
-        { label: "Voice", value: "EN / 中文 · low-key", provenance: "ai" },
-      ],
-      score: { value: 82, label: "Avatar Market-Fit" },
-      factors: [
-        { label: "Market whitespace", value: "Premium SMEs, not shouty ads" },
-        { label: "Language pair", value: "Matches KL + Penang" },
-        { label: "Distinctiveness", value: "Clear vs existing KOLs" },
-      ],
-      actions: [
-        { id: "accept", label: "Accept" },
-        { id: "edit", label: "Edit", variant: "ghost" },
-        { id: "regen", label: "Regenerate", variant: "quiet" },
-      ],
-    }),
-    [answers],
-  );
+  const kolCard: ActionCardModel | null = proposal
+    ? {
+        id: "avatar",
+        kind: "avatar",
+        title: `Avatar proposal · ${proposal.name}`,
+        provenance: "ai",
+        body: proposal.body,
+        rows: [
+          { label: "Voice", value: proposal.voice, provenance: "user" },
+          { label: "World", value: proposal.world, provenance: "user" },
+          { label: "Speaks to", value: proposal.audience, provenance: "user" },
+          { label: "Language", value: proposal.language, provenance: "ai" },
+          { label: "Based in", value: proposal.market, provenance: "ai" },
+        ],
+        score: { value: proposal.amf, label: "Niche fit" },
+        factors: proposal.factors,
+        actions:
+          flow === "accepted"
+            ? [
+                { id: "another", label: "Make another" },
+                { id: "list", label: "List for brand jobs", variant: "quiet" },
+              ]
+            : [
+                { id: "accept", label: "Accept" },
+                { id: "edit", label: "Edit", variant: "ghost" },
+                { id: "regen", label: "Regenerate", variant: "quiet" },
+              ],
+      }
+    : null;
 
   if (!ready) {
     return (
@@ -117,46 +177,145 @@ export function StudioView() {
     return <NeedWorkspace kind="creator" />;
   }
 
-  const makingContent = ws.canvasIntent === "content" || ws.canvasIntent === "upload";
-  const creating =
-    tab === "create" || ws.canvasIntent === "blank" || flow !== "idle" || makingContent;
+  const studio = ws;
+  const makingContent = studio.canvasIntent === "content" || studio.canvasIntent === "upload";
   const isBlank =
     flow === "idle" &&
     !selected &&
     !makingContent &&
-    (tab === "create" || (!ws.kols.length && tab === "home") || ws.canvasIntent === "blank");
+    (tab === "create" || (!studio.kols.length && tab === "home") || studio.canvasIntent === "blank");
 
   function startKol() {
     patchCreator({ canvasIntent: "kol" });
-    setFlow("market");
+    setLookId(null);
+    setTribe("");
+    setRegen(0);
+    setFlow("look");
   }
 
   function acceptKol() {
+    if (!proposal) return;
+    const kol = kolFromProposal(proposal, uid("kol"));
     patchCreator({
       canvasIntent: null,
-      kols: [
-        {
-          id: uid("kol"),
-          name: "Mei Lin",
-          market: answers.market,
-          audience: answers.audience,
-          categories: "Lifestyle, services, F&B",
-          language: "EN / 中文",
-          personality: "Warm, precise",
-          amf: 82,
-        },
-      ],
+      kols: appendKol(studio.kols, kol),
       feed: [
         {
-          id: "amf",
-          title: "Mei Lin has an AMF of 82",
-          detail: "Predicted · inspect factors",
+          id: uid("feed"),
+          title: `${kol.name} is in your studio`,
+          detail: `${kol.categories} · ${kol.audience}`,
+          href: "/work/studio?tab=kols",
+          tone: "action",
+        },
+        {
+          id: uid("list"),
+          title: `List ${kol.name} for brand jobs`,
+          detail: "Later · this talent only",
           href: "/work/studio?tab=kols",
           tone: "info",
         },
+        ...studio.feed,
       ],
     });
-    setFlow("idle");
+    setFlow("accepted");
+  }
+
+  function onCastAction(id: string) {
+    switch (id) {
+      case "accept":
+        acceptKol();
+        return;
+      case "edit":
+        setFlow("look");
+        return;
+      case "regen":
+        setRegen((n) => n + 1);
+        return;
+      case "another":
+        startKol();
+        return;
+      case "list":
+        setFlow("idle");
+        router.push(studioHref("kols", searchParams.toString()));
+        return;
+      default:
+        return;
+    }
+  }
+
+  function renderCast(step: CastFlow) {
+    switch (step) {
+      case "idle":
+        return null;
+      case "look":
+        return (
+          <div className="mx-auto w-full max-w-5xl">
+            <p className="text-[17px] font-medium leading-6 text-ink">Who are we making?</p>
+            <div className="mt-4">
+              <KolLookRow
+                looks={KOL_LOOKS}
+                selectedId={lookId ?? undefined}
+                takenWorlds={studio.kols.map((kol) => kol.categories)}
+                onPick={(id) => {
+                  setLookId(id);
+                  setTribe("");
+                  setRegen(0);
+                  setFlow("tribe");
+                }}
+              />
+            </div>
+          </div>
+        );
+      case "tribe":
+        return (
+          <div className="mx-auto w-full max-w-md">
+            {look ? (
+              <button
+                type="button"
+                className="text-sm text-muted hover:text-ink"
+                onClick={() => setFlow("look")}
+              >
+                {look.name}
+              </button>
+            ) : null}
+            {look && takenNames.length ? (
+              <p className="mt-2 text-sm text-muted">
+                You already have {takenNames.join(", ")} in {look.world}.
+              </p>
+            ) : null}
+            <div className="mt-4">
+              <ClarifyChips
+                question="Who is in their comments?"
+                options={look?.tribes ?? []}
+                onPick={(value) => {
+                  setTribe(value);
+                  setFlow("proposal");
+                }}
+              />
+            </div>
+          </div>
+        );
+      case "proposal":
+      case "accepted":
+        return kolCard ? (
+          <div className="mx-auto w-full max-w-md">
+            {look ? (
+              <button
+                type="button"
+                className="mb-3 text-sm text-muted hover:text-ink"
+                onClick={() => setFlow("look")}
+              >
+                {look.name}
+              </button>
+            ) : null}
+            <ActionCard card={kolCard} onAction={onCastAction} />
+          </div>
+        ) : null;
+      default: {
+        const _never: never = step;
+        throw new Error(`Unhandled cast step: ${_never}`);
+      }
+    }
   }
 
   const board = (
@@ -179,45 +338,8 @@ export function StudioView() {
           }}
         />
       ) : null}
-      {flow === "market" ? (
-        <div className="mx-auto max-w-md">
-          <ClarifyChips
-            question="Which market should this KOL serve?"
-            options={["Kuala Lumpur", "Penang", "Both KL and Penang"]}
-            onPick={(v) => {
-              setAnswers((a) => ({ ...a, market: v }));
-              setFlow("audience");
-            }}
-          />
-        </div>
-      ) : null}
-      {flow === "audience" ? (
-        <div className="mx-auto max-w-md">
-          <ClarifyChips
-            question="Who should follow this personality?"
-            options={[
-              "25–34 brand explorers",
-              "Premium regulars",
-              "Weekend group buyers",
-            ]}
-            onPick={(v) => {
-              setAnswers((a) => ({ ...a, audience: v }));
-              setFlow("done");
-            }}
-          />
-        </div>
-      ) : null}
-      {flow === "done" ? (
-        <div className="mx-auto max-w-md">
-          <ActionCard
-            card={kolCard}
-            onAction={(id) => {
-              if (id === "accept") acceptKol();
-            }}
-          />
-        </div>
-      ) : null}
-      {!selected && !creating && ws.kols.length && flow === "idle" ? (
+      {!selected && flow !== "idle" ? renderCast(flow) : null}
+      {!selected && !isBlank && flow === "idle" && !makingContent ? (
         <div className="mx-auto max-w-md space-y-6">
           {tab === "home" ? (
             <>
@@ -240,7 +362,7 @@ export function StudioView() {
                   }))}
                 />
               ) : null}
-              <ActionFeed items={ws.feed} />
+              <ActionFeed items={studio.feed} />
             </>
           ) : null}
           {tab === "campaigns" ? (
@@ -295,13 +417,18 @@ export function StudioView() {
             </div>
           ) : null}
           {tab === "kols" ? (
-            <ActionCard
-              card={{
-                ...kolCard,
-                title: `${ws.kols[0].name} · AMF ${ws.kols[0].amf}`,
-                actions: [{ id: "inspect", label: "Inspect factors" }],
-              }}
-            />
+            studio.kols.length ? (
+              <div className="space-y-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+                  KOLs
+                </p>
+                {studio.kols.map((kol) => (
+                  <ActionCard key={kol.id} card={rosterCard(kol)} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">No talent yet. Create a virtual KOL.</p>
+            )
           ) : null}
           {tab === "profile" ? (
             <div className="space-y-4">
@@ -342,7 +469,7 @@ export function StudioView() {
 
   const app = (
     <MobileAppShell
-      title={ws.name}
+      title={studio.name}
       items={creatorNav}
       active={tab === "create" ? "create" : tab}
       contained={desktop && deskMode === "phone"}
@@ -386,7 +513,7 @@ export function StudioView() {
       ) : null}
       {desktop && (!preview || deskMode === "canvas") ? (
         <StudioShell
-          name={ws.name}
+          name={studio.name}
           actions={preview ? modeToggle : undefined}
           composer={
             <p className="text-center text-sm text-muted">

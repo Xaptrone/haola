@@ -35,7 +35,7 @@ function Intent({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-14 w-full items-center justify-center rounded-[16px] border border-line bg-surface text-[16px] text-ink transition-[border-color] duration-[var(--duration-ui)] ease-[var(--ease-out)] hover:border-ink/25"
+            className="flex min-h-14 w-full items-center justify-center rounded-[16px] border border-line bg-surface text-[16px] text-ink transition-[border-color,transform] duration-[var(--duration-press)] ease-[var(--ease-out)] hover:border-ink/25 active:scale-[0.97]"
     >
       {children}
     </button>

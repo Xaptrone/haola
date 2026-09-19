@@ -26,11 +26,11 @@ export function MobileAppShell({
           : "workspace-root bg-canvas lg:hidden"
       }
     >
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-canvas/90 px-5 py-3 backdrop-blur-md">
-        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-canvas/90 px-5 py-3 backdrop-blur-md">
+        <p className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
           {title}
         </p>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <PreviewMenu />
           <SignOutButton />
         </div>
@@ -56,11 +56,11 @@ export function StudioShell({
 }) {
   return (
     <div className="hidden h-dvh flex-col bg-canvas lg:flex">
-      <header className="flex items-center justify-between border-b border-line px-8 py-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+      <header className="flex items-center justify-between gap-6 border-b border-line px-8 py-4">
+        <p className="min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
           Studio · {name}
         </p>
-        <div className="flex items-center gap-6">
+        <div className="flex shrink-0 items-center gap-6">
           {actions}
           <PreviewMenu />
           <Link href="/oversight/creator" className="text-sm text-muted hover:text-ink">
