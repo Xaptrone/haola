@@ -10,8 +10,7 @@ export default function CreatorsPage() {
         A studio in your pocket. A canvas on your desk.
       </h1>
       <p className="mt-4 text-sm leading-6 text-muted">
-        Sign in, name yourself as a creator, then land on a blank canvas. Make a
-        virtual KOL, make content, or upload a draft.
+        Brands hire virtual KOLs. You make them here — then they match.
       </p>
       <Link
         href="/register/creator"

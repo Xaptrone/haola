@@ -15,14 +15,14 @@ Provisioned on creator registration. Purpose: make virtual KOLs and content.
 Creators do not fill a business form. The name brands see is a **creator name**.
 
 1. `/creators` → Open a studio → `/register/creator`.
-2. **1 of 2 · Sign in** — email (creator name + email + password), Google, or WhatsApp. Copy is studio language (`you@email.com`), never `you@brand.my`.
-3. **2 of 2 · Creator name** — “What should brands call you?” Required creator name. Optional Instagram handle. WhatsApp does not use the phone as the name. Google may prefill a person name; they can edit it.
-4. Server/session creates the user + **creator workspace** named `{creator}'s studio`.
-5. Enter `/work/studio` immediately on a blank canvas: welcome by creator name, one line on what fxgen is for creators, then the three intents.
+2. **Account** — email + password, Google, or WhatsApp. No creator name on this screen. Copy is studio language (`you@email.com`), never `you@brand.my`.
+3. **Your card** — “What should brands call you?” Required creator name (visible label, why it exists). Optional Instagram. Required market chips: Kuala Lumpur, Penang, or both. WhatsApp does not use the phone as the name. Google may prefill a person name; they can edit it.
+4. Session creates the user + **creator workspace** named `{creator}'s studio`, with market stored on the workspace.
+5. Enter `/work/studio` on a blank canvas: welcome by creator name, a line that names their market, then the three intents. The first virtual KOL skips the market question if they already answered it.
 
-Email that already collected a creator name still confirms it on step 2 (optional Instagram). Returning login (`/login?intent=creator`) goes to the studio if it exists, otherwise back to creator name.
+Returning login (`/login?intent=creator`) goes to the studio if it exists, otherwise back to the creator card.
 
-Do not land a new creator on settings, empty tables, or “complete your profile”. Do not ask for a business name, SSM, or company.
+Do not land a new creator on settings, empty tables, or “complete your profile”. Do not ask for a business name, SSM, or company. Do not ask the same name twice.
 
 The same workspace has three presentations. Do not ship three products — ship one studio that changes chrome.
 

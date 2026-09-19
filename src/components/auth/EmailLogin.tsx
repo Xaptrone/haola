@@ -6,10 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { WhatsAppLogin } from "@/components/auth/WhatsAppLogin";
-import {
-  creatorNameError,
-  stashPendingCreatorName,
-} from "@/lib/creator-registration";
 
 type Mode = "login" | "register";
 export type AuthIntent = "creator" | "business";
@@ -47,10 +43,7 @@ export function EmailLogin({
 
   const otherMethods = googleConfigured || whatsappConfigured;
   const creator = intent === "creator";
-
-  function stashCreatorName() {
-    if (creator) stashPendingCreatorName(name);
-  }
+  const showName = mode === "register" && !creator;
 
   async function loginWithEmail() {
     const result = await signIn("email-password", {
@@ -70,13 +63,6 @@ export function EmailLogin({
   async function onSubmit(event: { preventDefault(): void }) {
     event.preventDefault();
     setError(null);
-    if (mode === "register" && creator) {
-      const nameError = creatorNameError(name);
-      if (nameError) {
-        setError(nameError);
-        return;
-      }
-    }
     if (mode === "register" && password !== confirm) {
       setError("Those passwords don't match.");
       return;
@@ -94,7 +80,6 @@ export function EmailLogin({
           setError(data.error ?? "Couldn't create that account.");
           return;
         }
-        stashCreatorName();
       }
       await loginWithEmail();
     } catch {
@@ -107,7 +92,7 @@ export function EmailLogin({
   const title =
     mode === "register"
       ? creator
-        ? "Open your studio"
+        ? "Sign in"
         : "Create account"
       : creator
         ? "Welcome back"
@@ -115,16 +100,14 @@ export function EmailLogin({
   const body =
     mode === "register"
       ? creator
-        ? "Your creator name is what brands see. Not a company name."
+        ? "Email first. You'll name yourself as a creator next — not a business."
         : intent === "business"
           ? "Use email. Then we'll open your business workspace."
           : "Use email. Then choose whether you are a business or a creator."
       : creator
         ? "Log in to open your studio."
         : "Use the email you registered with.";
-  const canSubmit =
-    Boolean(email && password) &&
-    (mode !== "register" || !creator || Boolean(name.trim()));
+  const canSubmit = Boolean(email && password);
 
   return (
     <div>
@@ -140,17 +123,14 @@ export function EmailLogin({
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
       <form onSubmit={onSubmit} className="mt-8 space-y-3">
-        {mode === "register" ? (
+        {showName ? (
           <label className="block">
-            <span className="sr-only">{creator ? "Creator name" : "Name"}</span>
+            <span className="sr-only">Name</span>
             <input
               value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (error) setError(null);
-              }}
-              autoComplete={creator ? "nickname" : "name"}
-              placeholder={creator ? "Creator name" : "Your name"}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              placeholder="Your name"
               className={fieldClass}
             />
           </label>
@@ -179,24 +159,27 @@ export function EmailLogin({
           />
         </label>
         {mode === "register" ? (
-          <label className="block">
-            <span className="sr-only">Confirm password</span>
-            <input
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              type="password"
-              autoComplete="new-password"
-              placeholder="Confirm password"
-              className={fieldClass}
-            />
-          </label>
+          <>
+            <label className="block">
+              <span className="sr-only">Confirm password</span>
+              <input
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                type="password"
+                autoComplete="new-password"
+                placeholder="Confirm password"
+                className={fieldClass}
+              />
+            </label>
+            <p className="text-[13px] text-muted">At least 8 characters.</p>
+          </>
         ) : null}
         {error ? <p className="text-sm text-rose">{error}</p> : null}
         <Button type="submit" className="min-h-14 w-full" disabled={busy || !canSubmit}>
           {busy
             ? mode === "register"
               ? creator
-                ? "Opening..."
+                ? "Continuing..."
                 : "Creating..."
               : "Signing in..."
             : mode === "register"
@@ -234,11 +217,7 @@ export function EmailLogin({
         <div className="mt-8">
           <p className="mb-3 text-center text-[13px] text-muted">or</p>
           {googleConfigured ? (
-            <GoogleButton
-              variant="ghost"
-              callbackUrl={callbackUrl}
-              onBeforeSignIn={stashCreatorName}
-            />
+            <GoogleButton variant="ghost" callbackUrl={callbackUrl} />
           ) : null}
           {whatsappConfigured ? (
             <div className={googleConfigured ? "mt-3" : undefined}>

@@ -1,13 +1,17 @@
 "use client";
 
+import { firstRunLine } from "@/lib/creator-registration";
+
 export function BlankCanvas({
   onPick,
   name,
   firstRun,
+  market,
 }: {
   onPick: (intent: "kol" | "content" | "upload") => void;
   name?: string;
   firstRun?: boolean;
+  market?: string;
 }) {
   return (
     <div className="mx-auto flex min-h-[60dvh] max-w-md flex-col items-center justify-center px-2 text-center">
@@ -15,9 +19,7 @@ export function BlankCanvas({
         {firstRun && name ? `Welcome, ${name}` : name ? `${name}'s studio` : "Blank canvas"}
       </p>
       {firstRun ? (
-        <p className="mt-3 text-sm leading-6 text-muted">
-          Make virtual KOLs. Brands hire the ones that fit.
-        </p>
+        <p className="mt-3 text-sm leading-6 text-muted">{firstRunLine(market)}</p>
       ) : null}
       <h1 className="mt-4 text-[32px] font-semibold leading-[1.1] tracking-[-0.03em] text-ink">
         What are we making?

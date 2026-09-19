@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   creatorNameError,
+  firstRunLine,
+  isCreatorMarket,
   isUsableCreatorName,
   parseCreatorHandle,
   studioNameFromCreator,
@@ -75,4 +77,21 @@ test("parses optional Instagram handles", () => {
     handle: "chelseaxu1225",
   });
   assert.equal(parseCreatorHandle("nope!!").error, "Use an Instagram handle, like @aisha.");
+});
+
+test("first-run line names the market the creator chose", () => {
+  assert.equal(
+    firstRunLine("Penang"),
+    "Virtual KOLs for Penang. Brands hire the ones that fit.",
+  );
+  assert.equal(
+    firstRunLine("Both KL and Penang"),
+    "Virtual KOLs for KL and Penang. Brands hire the ones that fit.",
+  );
+  assert.equal(
+    firstRunLine(),
+    "Make virtual KOLs. Brands hire the ones that fit.",
+  );
+  assert.equal(isCreatorMarket("Penang"), true);
+  assert.equal(isCreatorMarket("Singapore"), false);
 });

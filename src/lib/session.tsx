@@ -60,13 +60,14 @@ function sampleKol(): CreatorWorkspace["kols"][number] {
 
 function newCreatorWorkspace(
   creatorName: string,
-  handle?: string,
+  extras?: { handle?: string; market?: string },
 ): CreatorWorkspace {
   return {
     kind: "creator",
     id: uid("cws"),
     name: studioNameFromCreator(creatorName),
-    handle,
+    handle: extras?.handle,
+    market: extras?.market,
     kols: [],
     feed: [],
     canvasIntent: "blank",
@@ -210,6 +211,7 @@ type SessionApi = {
     creatorName: string;
     email: string;
     handle?: string;
+    market?: string;
   }) => void;
   registerBusiness: (name: string, email: string) => void;
   loginReadyBusiness: () => void;
@@ -365,14 +367,22 @@ export function SessionProvider({
   }, [session, guestDraft, ready, identity]);
 
   const registerCreator = useCallback(
-    (input: { creatorName: string; email: string; handle?: string }) => {
+    (input: {
+      creatorName: string;
+      email: string;
+      handle?: string;
+      market?: string;
+    }) => {
       const creatorName = normalizeCreatorName(input.creatorName);
       setSession({
         role: "creator",
         displayName: creatorName,
         email: input.email,
         businessWorkspace: null,
-        creatorWorkspace: newCreatorWorkspace(creatorName, input.handle),
+        creatorWorkspace: newCreatorWorkspace(creatorName, {
+          handle: input.handle,
+          market: input.market,
+        }),
       });
     },
     [],

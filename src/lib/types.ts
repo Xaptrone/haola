@@ -141,6 +141,8 @@ export type CreatorWorkspace = {
   name: string;
   /** Instagram handle without @. Optional at registration. */
   handle?: string;
+  /** Market the creator works. Set during onboarding. */
+  market?: string;
   kols: Kol[];
   feed: FeedItem[];
   canvasIntent: "blank" | "kol" | "content" | "upload" | null;

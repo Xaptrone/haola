@@ -16,6 +16,7 @@ import { uid } from "@/lib/ids";
 import { rm, useMarketplace } from "@/lib/marketplace";
 import { useSession } from "@/lib/session";
 import { useDesktop } from "@/lib/use-desktop";
+import { CREATOR_MARKETS } from "@/lib/creator-registration";
 
 export function StudioView() {
   const { session, patchCreator, loadPreset, ready } = useSession();
@@ -128,6 +129,11 @@ export function StudioView() {
 
   function startKol() {
     patchCreator({ canvasIntent: "kol" });
+    if (ws?.market) {
+      setAnswers((a) => ({ ...a, market: ws.market ?? "" }));
+      setFlow("audience");
+      return;
+    }
     setFlow("market");
   }
 
@@ -174,6 +180,7 @@ export function StudioView() {
         <BlankCanvas
           name={session.displayName}
           firstRun={!ws.kols.length}
+          market={ws.market}
           onPick={(intent) => {
             if (intent === "kol") startKol();
             else patchCreator({ canvasIntent: intent });
@@ -184,7 +191,7 @@ export function StudioView() {
         <div className="mx-auto max-w-md">
           <ClarifyChips
             question="Which market should this KOL serve?"
-            options={["Kuala Lumpur", "Penang", "Both KL and Penang"]}
+            options={[...CREATOR_MARKETS]}
             onPick={(v) => {
               setAnswers((a) => ({ ...a, market: v }));
               setFlow("audience");
@@ -308,6 +315,9 @@ export function StudioView() {
                 </h1>
                 {ws.handle ? (
                   <p className="mt-1 text-sm text-muted">@{ws.handle}</p>
+                ) : null}
+                {ws.market ? (
+                  <p className="mt-1 text-sm text-muted">{ws.market}</p>
                 ) : null}
               </div>
               <ActionCard

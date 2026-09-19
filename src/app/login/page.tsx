@@ -40,6 +40,7 @@ export default async function LoginPage({
       <EmailLogin
         intent={creator ? "creator" : intent === "business" ? "business" : undefined}
         initialMode={creator ? "login" : "register"}
+        stepLabel={creator ? "Account" : undefined}
         registerHref={creator ? "/register/creator" : undefined}
         callbackUrl={afterAuth}
         googleConfigured={googleAuthConfigured()}

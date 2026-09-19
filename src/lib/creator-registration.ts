@@ -1,6 +1,26 @@
 export const PENDING_CREATOR_NAME_KEY = "fxgen.creatorName.pending";
 export const PENDING_CREATOR_HANDLE_KEY = "fxgen.creatorHandle.pending";
 
+export const CREATOR_MARKETS = [
+  "Kuala Lumpur",
+  "Penang",
+  "Both KL and Penang",
+] as const;
+
+export type CreatorMarket = (typeof CREATOR_MARKETS)[number];
+
+export function isCreatorMarket(value: string): value is CreatorMarket {
+  return (CREATOR_MARKETS as readonly string[]).includes(value);
+}
+
+export function firstRunLine(market?: string) {
+  if (market === "Both KL and Penang") {
+    return "Virtual KOLs for KL and Penang. Brands hire the ones that fit.";
+  }
+  if (market) return `Virtual KOLs for ${market}. Brands hire the ones that fit.`;
+  return "Make virtual KOLs. Brands hire the ones that fit.";
+}
+
 const HANDLE_RE = /^[A-Za-z0-9._]{1,30}$/;
 
 export function normalizeCreatorName(raw: string) {

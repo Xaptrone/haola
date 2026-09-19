@@ -26,7 +26,7 @@ Not charts. Feed of: needs attention, do next, what changed, AI recommends.
 
 - `/` business landing + guest AI
 - `/creators` creator door
-- `/register/creator` sign in, then creator name, then studio
+- `/register/creator` account, then creator card, then studio
 - `/login` `/start` Google sign-in then workspace pick (creator intent skips the pick)
 - `/work/studio` creator workspace (blank canvas / canvas / mobile home)
 - `/work/business` business workspace (setup / draft / create intents / content pipeline)
