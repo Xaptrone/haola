@@ -4,6 +4,7 @@ import path from "path";
 const nextConfig: NextConfig = {
   allowedDevOrigins: [
     "127.0.0.1",
+    "0.0.0.0",
     "*.trycloudflare.com",
     "*.ngrok-free.app",
     "*.ngrok.io",

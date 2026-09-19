@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { continueAfterSignIn } from "@/lib/auth-redirect";
 
 type Step = "phone" | "code";
 
 export function WhatsAppLogin({ callbackUrl }: { callbackUrl: string }) {
-  const router = useRouter();
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -64,8 +63,7 @@ export function WhatsAppLogin({ callbackUrl }: { callbackUrl: string }) {
         setError("That code didn't match. Try again.");
         return;
       }
-      router.push(result.url || callbackUrl);
-      router.refresh();
+      continueAfterSignIn(result.url, callbackUrl);
     } catch {
       setError("That code didn't match. Try again.");
     } finally {

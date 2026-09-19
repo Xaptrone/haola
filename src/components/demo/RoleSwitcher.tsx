@@ -77,7 +77,7 @@ function PreviewMenuInner({
       {open ? (
         <ul className={listClass}>
           {presets.map((p) => (
-            <li key={p.href}>
+            <li key={`${p.label}:${p.href}`}>
               <button
                 type="button"
                 className="flex min-h-11 w-full items-center px-3 text-left text-[13px] text-ink hover:bg-elevated"

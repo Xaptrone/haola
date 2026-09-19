@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { WhatsAppLogin } from "@/components/auth/WhatsAppLogin";
+import { continueAfterSignIn } from "@/lib/auth-redirect";
 
 type Mode = "login" | "register";
 
@@ -18,7 +18,6 @@ export function EmailLogin({
   googleConfigured: boolean;
   whatsappConfigured: boolean;
 }) {
-  const router = useRouter();
   const [mode, setMode] = useState<Mode>("register");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -40,8 +39,7 @@ export function EmailLogin({
       setError("That email or password didn't match.");
       return;
     }
-    router.push(result.url || callbackUrl);
-    router.refresh();
+    continueAfterSignIn(result.url, callbackUrl);
   }
 
   async function onSubmit(event: { preventDefault(): void }) {
@@ -50,6 +48,10 @@ export function EmailLogin({
     setBusy(true);
     try {
       if (mode === "register") {
+        if (password.length < 8) {
+          setError("Use at least 8 characters.");
+          return;
+        }
         if (password !== confirm) {
           setError("Those passwords don't match.");
           return;

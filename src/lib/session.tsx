@@ -295,6 +295,9 @@ export function SessionProvider({
   const [session, setSession] = useState<Session>(emptySession);
   const [guestDraft, setGuestDraft] = useState<CampaignDraft | null>(null);
   const [ready, setReady] = useState(false);
+  const identityId = identity?.id ?? "";
+  const identityEmail = identity?.email ?? "";
+  const identityName = identity?.name ?? "";
 
   useEffect(() => {
     const preset = previewPresetFromLocation(
@@ -312,8 +315,8 @@ export function SessionProvider({
         const next = sessionFromPreset(preset);
         setSession(next.session);
         setGuestDraft(next.guestDraft);
-      } else if (identity) {
-        const raw = localStorage.getItem(workspaceKey(identity.id));
+      } else if (identityId) {
+        const raw = localStorage.getItem(workspaceKey(identityId));
         if (raw) {
           const parsed = JSON.parse(raw) as Session;
           if (parsed.businessWorkspace) {
@@ -325,14 +328,14 @@ export function SessionProvider({
           }
           setSession({
             ...parsed,
-            displayName: parsed.displayName || identity.name,
-            email: identity.email,
+            displayName: parsed.displayName || identityName,
+            email: identityEmail,
           });
         } else {
           setSession({
             ...emptySession(),
-            displayName: identity.name,
-            email: identity.email,
+            displayName: identityName,
+            email: identityEmail,
           });
         }
       } else {
@@ -342,15 +345,25 @@ export function SessionProvider({
       /* ignore */
     }
     setReady(true);
-  }, [authReady, identity]);
+  }, [authReady, identityId, identityEmail, identityName]);
 
   useEffect(() => {
     if (!ready) return;
     localStorage.setItem(GUEST_KEY, JSON.stringify(guestDraft));
-    if (identity) {
-      localStorage.setItem(workspaceKey(identity.id), JSON.stringify(session));
+    if (!identityId) return;
+    if (session.role === "anonymous") {
+      try {
+        const raw = localStorage.getItem(workspaceKey(identityId));
+        if (raw) {
+          const parsed = JSON.parse(raw) as Session;
+          if (parsed.role && parsed.role !== "anonymous") return;
+        }
+      } catch {
+        /* ignore */
+      }
     }
-  }, [session, guestDraft, ready, identity]);
+    localStorage.setItem(workspaceKey(identityId), JSON.stringify(session));
+  }, [session, guestDraft, ready, identityId]);
 
   const registerCreator = useCallback((name: string, email: string) => {
     setSession({
