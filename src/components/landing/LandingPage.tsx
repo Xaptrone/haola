@@ -104,7 +104,7 @@ export function LandingPage() {
           card={{
             id: "proof",
             kind: "amf",
-            title: "Mei Lin · AMF 82",
+            title: "Sample · Mei Lin · AMF 82",
             provenance: "predicted",
             score: { value: 82, label: "Avatar Market-Fit" },
             factors: [

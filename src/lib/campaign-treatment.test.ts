@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { campaignTreatment, displayBrandName } from "./campaign-treatment.ts";
+import {
+  campaignTreatment,
+  displayBrandName,
+  liveMatchCopy,
+} from "./campaign-treatment.ts";
 
 test("displayBrandName hides placeholder names", () => {
   assert.equal(displayBrandName("Klinik Harmoni SS15"), "Klinik Harmoni SS15");
@@ -19,4 +23,12 @@ test("campaignTreatment has a distinct close per goal", () => {
   assert.match(campaignTreatment("Atelier Atas", "Bookings").beats[2]!.line, /booking/i);
   assert.match(campaignTreatment("Atelier Atas", "A new offer").beats[2]!.line, /offer/i);
   assert.match(campaignTreatment("Atelier Atas", "Awareness").hook, /Who Atelier Atas is for/);
+});
+
+test("live match copy never names a demo KOL", () => {
+  const copy = liveMatchCopy("Kedai Live Test");
+  assert.match(copy.title, /match a virtual KOL/i);
+  assert.match(copy.body, /Kedai Live Test/);
+  assert.doesNotMatch(copy.title, /Mei Lin|Aisha|Chef Ton/i);
+  assert.doesNotMatch(copy.body, /Mei Lin|Aisha|Chef Ton/i);
 });

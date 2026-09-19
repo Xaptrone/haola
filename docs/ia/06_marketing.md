@@ -17,7 +17,9 @@ In under 10 seconds: virtual KOLs make content for my business. One action: Star
 
 ## Guest AI
 
-CTA opens the campaign prompt. One or two clarify questions, then sample brief + recommended KOL cards. Continue → Google login → draft attaches to the new **business workspace**.
+CTA opens the campaign prompt. One or two clarify questions, then a 9:16 brief. Match is predicted and unassigned until a creator claims it — never auto-assign Mei Lin / Aisha. Continue → login → draft attaches to the new **business workspace**.
+
+The landing proof card may show a **Sample · Mei Lin** AMF, labelled Predicted. That is marketing, not a live assignment.
 
 Do not lead with Book a demo. Groups/chains may have a muted contact link.
 

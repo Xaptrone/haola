@@ -21,7 +21,6 @@ import {
   type LedgerResult,
 } from "@/lib/credits";
 import { uid } from "@/lib/ids";
-import { AISHA_CREATOR_ID } from "@/lib/review";
 import {
   demoMarketplace,
   emptyMarketplace,
@@ -69,7 +68,7 @@ type MarketplaceApi = {
   releaseJob: (job: ReviewJob, actor: string) => LedgerResult;
   refundJob: (job: ReviewJob, actor: string) => LedgerResult;
   businessBalance: (businessId: string) => number;
-  creatorBalance: (creatorId?: string) => number;
+  creatorBalance: (creatorId: string) => number;
   createHeldJob: (job: ReviewJob, actor: string) => SpendOk | SpendFail;
   createHeldJobs: (jobs: ReviewJob[], actor: string) => SpendOk | SpendFail;
 };
@@ -201,11 +200,13 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
       const party = s.parties.find(
         (p) => p.kind === "creator" && p.name === job.creatorName,
       );
-      result = releaseHold(
-        s.ledger,
-        { ...job, creatorId: party?.id ?? AISHA_CREATOR_ID },
-        actor,
-      );
+      result = party
+        ? releaseHold(s.ledger, { ...job, creatorId: party.id }, actor)
+        : {
+            ok: false,
+            entries: s.ledger,
+            error: "No creator party to release to.",
+          };
       if (!result.ok) return s;
       return { ...s, ledger: result.entries };
     });
@@ -277,7 +278,7 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
       refundJob,
       businessBalance: (businessId: string) =>
         balanceOf(state.ledger, businessWallet(businessId)),
-      creatorBalance: (creatorId = AISHA_CREATOR_ID) =>
+      creatorBalance: (creatorId: string) =>
         balanceOf(state.ledger, creatorWallet(creatorId)),
       createHeldJob,
       createHeldJobs,
